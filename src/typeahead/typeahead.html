@@ -23,7 +23,7 @@
             <span ng-bind-html="suggestion | facetlyHighlight:query"></span>
           </a>
       </li>
-      <li ng-show="query.length && !suggestions.length">
+      <li ng-show="query.length && !suggestions.length && !hideNotFound">
         <span>No match found...</span>
       </li>
     </ul>

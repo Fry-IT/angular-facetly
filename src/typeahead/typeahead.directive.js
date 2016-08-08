@@ -12,6 +12,7 @@
         facets: '=',
         placeholder: '@?',
         allowMultiselect: '=?',
+        hideNotFound: '=?',
         onSelect: '&'
       },
       link: function (scope, element) {
