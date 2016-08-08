@@ -80,6 +80,9 @@
       }
     };
 
+    service.validateValues = function (values) {
+    };
+
     return service;
   }
 

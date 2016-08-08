@@ -70,6 +70,8 @@
 
           scope.query = '';
 
+          // TODO: perform validations
+
           if (typeof scope.doSearch === 'function') {
             scope.filteredBy = Utils.updateModel(scope.filters);
             scope.doSearch();

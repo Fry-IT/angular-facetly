@@ -23,130 +23,97 @@
       vm.showModel = true;
     };
 
-    vm.placeholder = 'Search for items';
     vm.facets = [
       {
         id: 'keywords',
-        label: 'Keywords',
+        label: 'Full text search',
         type: 'text'
-      },
-      {
-        id: 'description',
-        label: 'Description',
-        type: 'text'
-      },
-      {
-        id: 'username',
-        label: 'Username',
-        type: 'text'
-      },
-      {
-        id: 'zip_code',
-        label: 'Zip code',
-        type: 'text'
-      },
-      {
-        id: 'city',
-        label: 'City',
-        type: 'select',
-        options: [
-          {
-            id: '04909235489',
-            title: 'London'
-          },
-          {
-            id: '46876342346',
-            title: 'New York'
-          },
-          {
-            id: '46876342346',
-            title: 'Seattle'
-          },
-          {
-            id: '46876342346',
-            title: 'Vancouver'
-          }
-        ]
-      },
-      {
-        id: 'country',
-        label: 'Country',
-        type: 'select',
-        options: [
-          {
-            id: '328470521',
-            title: 'United Kingdom'
-          },
-          {
-            id: '57682534',
-            title: 'United States of America'
-          },
-          {
-            id: '6802534253',
-            title: 'Germany'
-          }
-        ]
       },
       {
         id: 'email',
         label: 'Email',
-        type: 'text'
+        type: 'text',
+        validation: function (value) {
+          return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(value);
+        }
       },
       {
-        id: 'device',
-        label: 'Devices owned',
+        id: 'eventType',
+        label: 'Event type',
+        type: 'select',
+        options: [
+          {
+            id: '04909235489',
+            title: 'MSF'
+          },
+          {
+            id: '46876342346',
+            title: 'ARCP'
+          },
+          {
+            id: '46876342346',
+            title: 'Reflection'
+          },
+          {
+            id: '46876342346',
+            title: 'MINI-CEX'
+          }
+        ]
+      },
+      {
+        id: 'eventState',
+        label: 'Event state',
         type: 'select',
         multiselect: true,
         options: [
           {
             id: '123123189002',
-            title: 'iPhone'
+            title: 'Complete'
           },
           {
             id: '123234613762783189002',
-            title: 'iPad'
+            title: 'In progress'
           },
           {
             id: '126789022378223',
-            title: 'Mac'
+            title: 'Draft'
           },
           {
             id: '4567583456467457',
-            title: 'PC'
+            title: 'Submitted'
           }
         ]
       },
       {
-        id: 'role',
-        label: 'Role',
+        id: 'blueprint',
+        label: 'Blueprint',
         type: 'hierarchy',
-        // multiselect: true,
         options: [
           {
             id: '124158723975',
-            title: 'Administrator',
+            title: 'Curriculum items',
             categories: [
               {
                 id: '95436-1765',
-                title: 'Super administrator'
+                title: 'CI - Item one'
               },
               {
                 id: '3456982348675546',
-                title: 'FIGO administrator'
+                title: 'CI - Item two'
               }
             ]
           },
           {
             id: '7857676576',
-            title: 'Trainee',
+            title: 'Domains of competence',
             categories: [
               {
                 id: '9543sadf6-1765',
-                title: 'RCPCH trainee'
+                title: 'DoC - Item one'
               },
               {
                 id: '43565463778',
-                title: 'FIGO trainee'
+                title: 'DoC - Item two'
               }
             ]
           }
