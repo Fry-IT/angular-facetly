@@ -77,6 +77,8 @@
 
           scope.query = '';
 
+          // TODO: perform validations
+
           if (typeof scope.doSearch === 'function') {
             scope.filteredBy = Utils.updateModel(scope.filters);
             scope.doSearch();
@@ -191,6 +193,9 @@
       } else {
         return _.find(available, { title: value }).id;
       }
+    };
+
+    service.validateValues = function (values) {
     };
 
     return service;
