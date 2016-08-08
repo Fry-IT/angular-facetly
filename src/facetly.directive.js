@@ -75,6 +75,7 @@
           if (typeof scope.doSearch === 'function') {
             scope.filteredBy = Utils.updateModel(scope.filters);
             scope.doSearch();
+            scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
           }
         };
 
