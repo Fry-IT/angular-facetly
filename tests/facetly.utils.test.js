@@ -115,7 +115,16 @@ describe('Facetly Utils', function () {
   });
 
   it('should get ID or IDS of a set of values', function () {
+    var available = [
+      { id: '1', title: 'Level 1' },
+      { id: '11', title: 'Level 1.1' },
+      { id: '12', title: 'Level 1.2' }
+    ];
+    var singleId = Utils.getFacetIds('Level 1', available);
+    var multipleIds = Utils.getFacetIds(['Level 1', 'Level 1.1'], available);
 
+    expect(singleId).toEqual('1');
+    expect(multipleIds).toEqual(['1', '11']);
   });
 
 });
