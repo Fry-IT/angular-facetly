@@ -1,0 +1,59 @@
+/* Variables */
+
+$facetly-info: #3498db;
+$facetly-primary: #1dd1ae;
+$facetly-danger: #e74c3c;
+$facetly-success: #2ecc71;
+$facetly-warning: #e67e22;
+$facetly-gray: #7f8c8d;
+
+$colors: (primary: $facetly-primary, success: $facetly-success, danger: $facetly-danger, info: $facetly-info, warning: $facetly-warning, default: $facetly-gray);
+
+$border-radius: 15px;
+
+@mixin clearfix() {
+  &:before,
+  &:after {
+    content: " ";
+    display: table;
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+%list-unstyled {
+  list-style: none inside none;
+  margin: 0;
+  padding: 0;
+}
+
+%base-button {
+  background-image: none;
+  border-radius: $border-radius;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.42857143;
+  margin-bottom: 0;
+  padding: 4px 25px;
+  text-align: center;
+  text-decoration: none;
+  touch-action: manipulation;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  &:hover,
+  &:active,
+  &:focus {
+    text-decoration: none;
+  }
+}
+
+%tag {
+  background-color: #ddd;
+  border-radius: $border-radius;
+  padding: 4px;
+}

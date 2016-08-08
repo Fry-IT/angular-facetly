@@ -1,0 +1,74 @@
+.facetly-typeahead {
+  display: inline-block;
+}
+
+.facetly-typeahead-suggestions {
+  background: #f6f6f6;
+  border: 1px solid lighten($facetly-gray, 10);
+  box-shadow: 3px 4px 5px -2px #ddd;
+  cursor: pointer;
+  min-width: 160px;
+  opacity: 90;
+  position: absolute;
+  z-index: 1000;
+
+  ul {
+    @extend %list-unstyled;
+
+    max-height: 100px;
+    overflow-y: scroll;
+
+    li {
+      border-bottom: 1px solid lighten($facetly-gray, 30);
+      margin: 5px 0;
+
+      &.facetly-suggestion:hover,
+      &.facetly-suggestion.selected {
+        background-color: $facetly-info;
+
+        a {
+          color: #fff;
+        }
+      }
+
+      &:last-child {
+        border-bottom: 0;
+      }
+
+      a,
+      span {
+        color: #444;
+        padding: 5px;
+        text-decoration: none;
+      }
+
+      a:hover,
+      a:active,
+      a:focus {
+        color: #fff;
+      }
+
+      > a,
+      > span {
+        display: block;
+      }
+    }
+  }
+}
+
+.facetly-typeahead-selected {
+  display: inline-block;
+
+  ul {
+    @extend %list-unstyled;
+
+    > li {
+      display: inline-block;
+      margin: 4px;
+
+      a {
+        text-decoration: none;
+      }
+    }
+  }
+}

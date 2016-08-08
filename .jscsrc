@@ -1,0 +1,13 @@
+{
+  "preset": "airbnb",
+  "requirePaddingNewLinesAfterBlocks": {
+    "allExcept": ["inCallExpressions", "inArrayExpressions", "inProperties"]
+  },
+  "disallowMultipleVarDecl": null,
+  "safeContextKeyword": null,
+  "requireCamelCaseOrUpperCaseIdentifiers": "ignoreProperties",
+  "disallowQuotedKeysInObjects": "allButReserved",
+  "requireTrailingComma": null,
+  "disallowTrailingComma": true,
+  "maximumLineLength": 200
+}

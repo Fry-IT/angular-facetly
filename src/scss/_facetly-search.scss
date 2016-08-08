@@ -1,0 +1,91 @@
+.facetly-facets,
+.facetly-filters {
+  @extend %list-unstyled;
+
+  > li {
+    display: inline-block;
+    margin: 4px;
+
+    &:first-child {
+      margin-left: 0;
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+.facetly-filters {
+  display: inline-block;
+
+  > li {
+    @extend %tag;
+
+    .facetly-facet {
+      margin: 4px;
+    }
+
+    .facetly-value {
+      background-color: #fff;
+      border-radius: $border-radius;
+      padding: 0px 6px;
+    }
+  }
+}
+
+.facetly-facet {
+  @extend %tag;
+
+  padding-left: 8px;
+  padding-right: 8px;
+  text-transform: uppercase;
+}
+
+a.facetly-facet {
+  &:active,
+  &:focus,
+  &:hover {
+    background-color: #eee;
+  }
+}
+
+.facetly-facet,
+.facetly-facet a {
+  color: #444;
+  text-decoration: none;
+}
+
+.facetly-searchbox {
+  background-color: rgba(0, 0, 0, 0);
+  background-image: linear-gradient($facetly-primary, $facetly-primary), linear-gradient($facetly-gray, $facetly-gray);
+  background-position: center bottom, center calc(100% - 1px);
+  background-repeat: no-repeat;
+  background-size: 0 2px, 100% 1px;
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
+  display: inline-block;
+  float: none;
+  font-size: 14px;
+  padding: 5px 0;
+  transition: background 0s ease-out;
+  width: 80%;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.facetly-buttons {
+  width: 20%;
+}
+
+.facetly-searchbox,
+.facetly-buttons {
+  float: left;
+}
+
+.facetly-search {
+  @include clearfix;
+}

@@ -1,0 +1,31 @@
+<div class="facetly-typeahead">
+  <div class="facetly-typeahead-selected" ng-show="showSelected">
+    <span ng-repeat="value in selected">
+      <a class="facetly-icon facetly-text-danger" href="" ng-click="removeSelected(value)">&times;</a> {{value}}
+    </span>
+  </div>
+
+  <input
+    class="facetly-form-control"
+    type="text"
+    ng-model="query"
+    ng-focus="showSuggestions=true"
+    ng-click="showSuggestions=true"
+    placeholder="{{placeholder}}">
+
+  <div class="facetly-typeahead-suggestions" ng-show="showSuggestions">
+    <ul>
+      <li class="facetly-suggestion" ng-repeat="suggestion in suggestions"
+        ng-class="{'selected': suggestions.indexOf(suggestion) === selectedIndex}"
+        ng-mouseenter="updateSelectedIndex(suggestions.indexOf(suggestion))">
+          <a href="" ng-click="addSuggested(suggestion)">
+            <span ng-if="allowMultiselect && selected.indexOf(suggestion) !== -1">&#10004;</span>
+            <span ng-bind-html="suggestion | facetlyHighlight:query"></span>
+          </a>
+      </li>
+      <li ng-show="query.length && !suggestions.length">
+        <span>No match found...</span>
+      </li>
+    </ul>
+  </div>
+</div>

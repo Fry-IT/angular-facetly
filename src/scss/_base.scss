@@ -1,0 +1,24 @@
+.facetly-button {
+  @extend %base-button;
+
+  @each $color, $facetly-color in $colors {
+    &.facetly-button-#{$color} {
+      background-color: $facetly-color;
+      color: #fff;
+
+      &:hover {
+        background-color: darken($facetly-color, 10);
+        border-color: darken($facetly-color, 10);
+      }
+    }
+  }
+}
+
+@each $color, $facetly-color in $colors {
+  .facetly-text-#{$color} {
+    color: $facetly-color !important;
+  }
+}
+
+.facetly-hint-text {
+}

@@ -1,0 +1,11 @@
+<li>
+  <span class="facetly-facet">
+    <a class="facetly-icon facetly-text-danger" href="" ng-click="remove()"> &times; </a>
+    {{::filter.label}}:
+  </span>
+  <span class="facetly-value" ng-switch="filter.type">
+    <facetly-select ng-switch-when="select" options="filter.options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" />
+    <facetly-hierarchy ng-switch-when="hierarchy" options="filter.options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" />
+    <input ng-switch-default type="text" class="facetly-form-control" ng-model="filter.value" />
+  </span>
+</li>

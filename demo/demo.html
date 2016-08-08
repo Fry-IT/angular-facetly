@@ -1,0 +1,53 @@
+<!doctype html>
+<html class="no-js" lang="" ng-app="facetlyDemo">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>AngularJS Facetly Search</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="../dist/angular-facetly.css">
+
+  <style>
+    body {
+      background-color: #fafafa;
+    }
+
+    #facetly-demo {
+      background-color: #fff;
+      box-shadow: 0px 2px 2px #ddd;
+      margin: 50px auto;
+      max-width: 95%;
+      padding: 10px;
+      width: 1140px;
+    }
+
+    p,
+    ul,
+    li,
+    a {
+      font: 13px 'helvetica', arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="facetly-demo" data-ng-controller="MainController as vm">
+    <facetly facets="vm.facets" placeholder="vm.placeholder" separator="vm.separator" options="vm.options" ng-model="vm.model" do-search="vm.doSearch()"></facetly>
+
+    <hr/>
+
+    <pre ng-show="vm.showModel">
+      <p>Search model:</p>
+      {{vm.model | json}}
+    </pre>
+  </div>
+
+  <script src="../bower_components/angular/angular.js"></script>
+  <script src="../bower_components/angular-sanitize/angular-sanitize.js"></script>
+  <script src="../bower_components/lodash/lodash.js"></script>
+  <script src="../bower_components/angular-lodash/angular-lodash.js"></script>
+  <script src="../dist/angular-facetly.js"></script>
+  <script src="demo.js"></script>
+</body>
+</html>

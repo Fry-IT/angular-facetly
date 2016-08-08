@@ -1,0 +1,34 @@
+<div class="facetly">
+  <div class="facetly-search">
+    <div class="facetly-searchbox">
+      <ul class="facetly-filters">
+        <facetly-filter
+          ng-repeat="filter in filters"
+          filter="filter"
+          on-filter-remove="removeFilter(id)"
+          on-do-search="search()"
+          should-focus="filters.indexOf(filter) === focusIndex" />
+      </ul>
+
+      <facetly-typeahead
+        ng-show="filters.length !== facets.length"
+        query="query"
+        facets="typeaheadSuggestions"
+        on-select="addTypeaheadSuggestion(value)"
+        placeholder="{{options.placeholder}}" />
+    </div>
+
+    <div class="facetly-buttons">
+      <a class="facetly-button facetly-button-danger" href="" ng-if="filters.length" ng-click="removeAllFilters()">Remove all</a>
+      <a href="" class="facetly-button facetly-button-success" ng-click="search()">Search</a>
+    </div>
+  </div>
+
+  <p class="facetly-hint-text facetly-text-gray">Hint: You can use advanced search keywords to more easily find what you’re looking for. <a href="" ng-click="showFacets=!showFacets">What keywords can I use?</a></p>
+
+  <ul class="facetly-facets" ng-show="showFacets">
+    <li ng-repeat="facet in facets | filter:availableFacets">
+      <a class="facetly-facet" href="" title="" ng-click="addFilter(facet)" ng-bind="facet.label"></a>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,49 @@
+{
+  "name": "angular-facetly",
+  "version": "0.1.0",
+  "description": "AngularJS visual search box",
+  "license": "MIT",
+  "author": "Bogdan Lazar <bogdan@blazardesign.com>",
+  "keywords": [
+    "angularjs",
+    "visualsearch",
+    "facetly",
+    "angular facetly",
+    "searchbox",
+    "search"
+  ],
+  "devDependencies": {
+    "deep-freeze": "0.0.1",
+    "del": "^1.1.1",
+    "gulp": "^3.9.0",
+    "gulp-angular-templatecache": "^1.5.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-bump": "^1.0.0",
+    "gulp-concat": "^2.4.3",
+    "gulp-csso": "^1.0.1",
+    "gulp-git": "^1.6.0",
+    "gulp-jshint": "^1.9.0",
+    "gulp-load-plugins": "^1.1.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-sass": "^2.1.0",
+    "gulp-shell": "^0.5.1",
+    "gulp-strip-debug": "^1.1.0",
+    "gulp-uglify": "^1.0.2",
+    "gulp-util": "^3.0.7",
+    "jasmine-core": "^2.4.1",
+    "jshint-stylish": "^1.0.0",
+    "karma": "^1.1.1",
+    "karma-jasmine": "^1.0.2",
+    "karma-phantomjs-launcher": "^1.0.1",
+    "node-sass": "^3.8.0",
+    "phantomjs": "^2.1.7",
+    "require-dir": "^0.3.0"
+  },
+  "scripts": {
+    "start": "gulp watch",
+    "test": "gulp test",
+    "watch-test": "gulp watch-test",
+    "build": "gulp build",
+    "release": "gulp release"
+  }
+}

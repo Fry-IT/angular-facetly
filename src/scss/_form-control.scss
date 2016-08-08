@@ -1,0 +1,16 @@
+.facetly-form-control {
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+  box-shadow: none;
+  display: inline-block;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.facetly-select,
+.facetly-hierarchy {
+  display: inline-block;
+}
