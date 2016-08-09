@@ -5,6 +5,10 @@
   "authors": [
     "Bogdan Lazar <designer@blazardesign.com>"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tricinel/angular-facetly"
+  },
   "license": "MIT",
   "keywords": [
     "angularjs",
