@@ -127,4 +127,72 @@ describe('Facetly Utils', function () {
     expect(multipleIds).toEqual(['1', '11']);
   });
 
+  it('should fail validation', function () {
+    var newFilters = [
+      {
+        id: 'filterOne',
+        label: 'Filter one',
+        value: 'Value one',
+        validation: {
+          testValidation: function (value) {
+            return false;
+          }
+        },
+        validationMessages: {
+          testValidation: 'Not valid'
+        }
+      }
+    ];
+    var filtersAfter = Utils.validateValues(newFilters);
+    var invalidFilters = newFilters.slice();
+    invalidFilters[0].isValid = false;
+    invalidFilters[0].messages = ['Filter one: Not valid'];
+
+    expect(filtersAfter).toEqual(invalidFilters);
+  });
+
+  it('should pass validation', function () {
+    var newFilters = [
+      {
+        id: 'filterOne',
+        label: 'Filter one',
+        value: 'Value one',
+        validation: {
+          testValidation: function (value) {
+            return true;
+          }
+        },
+        validationMessages: {
+          testValidation: 'Valid'
+        }
+      }
+    ];
+    var filtersAfter = Utils.validateValues(newFilters);
+    var invalidFilters = newFilters.slice();
+
+    expect(filtersAfter).toEqual(invalidFilters);
+  });
+
+  it('should collect validation errors', function () {
+    var newFilters = [
+      {
+        id: 'filterOne',
+        label: 'Filter one',
+        value: 'Value one',
+        messages: ['Not valid'],
+        validation: {
+          testValidation: function (value) {
+            return false;
+          }
+        },
+        validationMessages: {
+          testValidation: 'Not valid'
+        }
+      }
+    ];
+    var validationErrors = Utils.collectValidationErrors(newFilters);
+
+    expect(validationErrors).toEqual(['Filter one: Not valid']);
+  });
+
 });

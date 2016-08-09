@@ -80,7 +80,41 @@
       }
     };
 
-    service.validateValues = function (values) {
+    service.validateValues = function (filters) {
+      return _.map(filters, function (filter) {
+        // Cleanup
+        delete filter.isValid;
+        delete filter.messages;
+
+        if (filter.validation && filter.validationMessages) {
+          _.forEach(filter.validation, function (func, key) {
+            if (typeof func === 'function' && !_.isUndefined(filter.validationMessages[key]) && !func(filter.value)) {
+              filter.isValid = false;
+              filter.messages = filter.messages || [];
+              filter.messages.push(filter.validationMessages[key]);
+            }
+          });
+        }
+
+        return filter;
+      });
+    };
+
+    service.collectValidationErrors = function (filters) {
+      return _.chain(filters)
+              .filter(function (filter) {
+                return filter.messages && filter.messages.length;
+              })
+              .map(function (filter) {
+                var errors = [];
+                _.forEach(filter.messages, function (message) {
+                  errors.push(filter.label + ': ' + message);
+                });
+
+                return errors;
+              })
+              .flatten()
+              .value();
     };
 
     return service;

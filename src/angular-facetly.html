@@ -28,6 +28,13 @@
 
   <p class="facetly-hint-text facetly-text-gray">Hint: You can use advanced search keywords to more easily find what you’re looking for. <a href="" ng-click="showFacets=!showFacets">What keywords can I use?</a></p>
 
+  <p class="facetly-hint-text facetly-text-danger" ng-show="errors.length">
+    Please correct the following errors before continuing:
+    <ul>
+      <li ng-repeat="error in errors" ng-bind="error"></li>
+    </ul>
+  </p>
+
   <ul class="facetly-facets" ng-show="showFacets">
     <li ng-repeat="facet in facets | filter:availableFacets">
       <a class="facetly-facet" href="" title="" ng-click="addFilter(facet)" ng-bind="facet.label"></a>

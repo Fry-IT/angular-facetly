@@ -70,9 +70,13 @@
 
           scope.query = '';
 
-          // TODO: perform validations
+          // Perform validations
+          scope.filters = Utils.validateValues(scope.filters);
+          var validationPassed = !_.isUndefined(_.find(scope.filters, { isValid: false })) ? false : true;
 
-          if (typeof scope.doSearch === 'function') {
+          scope.errors = Utils.collectValidationErrors(scope.filters);
+
+          if (validationPassed && typeof scope.doSearch === 'function') {
             scope.filteredBy = Utils.updateModel(scope.filters);
             scope.doSearch();
             scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);

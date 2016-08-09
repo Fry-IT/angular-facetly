@@ -34,14 +34,31 @@
         id: 'email',
         label: 'Email',
         type: 'text',
-        validation: function (value) {
-          return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(value);
+        validation: {
+          validEmail: function (value) {
+            return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(value);
+          },
+          notEmpty: function (value) {
+            return value && value.length > 0;
+          }
+        },
+        validationMessages: {
+          validEmail: 'This must be a valid email!',
+          notEmpty: 'This field cannot be empty!'
         }
       },
       {
         id: 'eventType',
         label: 'Event type',
         type: 'select',
+        validation: {
+          notEmpty: function (value) {
+            return value && value.length > 0;
+          }
+        },
+        validationMessages: {
+          notEmpty: 'This field cannot be empty!'
+        },
         options: [
           {
             id: '04909235489',

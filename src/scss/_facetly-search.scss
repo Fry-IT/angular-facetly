@@ -22,6 +22,12 @@
   > li {
     @extend %tag;
 
+    border: 1px solid transparent;
+
+    &.facetly-validation-error {
+      border-color: $facetly-danger;
+    }
+
     .facetly-facet {
       margin: 4px;
     }
