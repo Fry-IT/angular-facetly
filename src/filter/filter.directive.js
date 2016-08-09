@@ -9,11 +9,11 @@
       templateUrl: 'filter/filter.html',
       scope: {
         filter: '=',
+        listMaxItems: '=?',
         onFilterRemove: '&',
         onDoSearch: '&'
       },
       link: function (scope, element, attrs) {
-
         var tagName;
 
         switch (scope.filter.type) {

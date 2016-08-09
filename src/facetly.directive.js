@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function FacetlyDirective(Utils) {
+  function FacetlyDirective(Utils, DEFAULT_OPTIONS) {
 
     return {
       restrict: 'E',
@@ -26,7 +26,7 @@
                   .value();
         };
 
-        scope.options = _.assign({}, scope.options);
+        scope.options = _.assign({}, DEFAULT_OPTIONS, scope.options);
 
         scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
 
@@ -100,7 +100,7 @@
     };
   }
 
-  FacetlyDirective.$inject = ['FacetlyUtils'];
+  FacetlyDirective.$inject = ['FacetlyUtils', 'DEFAULT_OPTIONS'];
 
   angular.module('ngFacetly')
     .directive('facetly', FacetlyDirective);

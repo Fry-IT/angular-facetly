@@ -10,6 +10,7 @@
       scope: {
         options: '=',
         allowMultiselect: '=?',
+        listMaxItems: '=?',
         onSelectChange: '&'
       },
       link: function (scope) {

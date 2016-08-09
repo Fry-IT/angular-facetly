@@ -5,6 +5,7 @@
         <facetly-filter
           ng-repeat="filter in filters"
           filter="filter"
+          list-max-items="options.listMaxItems"
           on-filter-remove="removeFilter(id)"
           on-do-search="search()"
           should-focus="filters.indexOf(filter) === focusIndex" />

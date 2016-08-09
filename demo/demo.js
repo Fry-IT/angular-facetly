@@ -16,7 +16,8 @@
 
     vm.options = {
       defaultFacet: 'keywords',
-      placeholder: 'Filter your events by...'
+      placeholder: 'Filter your events by...',
+      listMaxItems: 50
     };
 
     vm.doSearch = function () {

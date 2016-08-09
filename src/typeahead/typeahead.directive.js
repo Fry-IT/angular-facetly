@@ -13,6 +13,7 @@
         placeholder: '@?',
         allowMultiselect: '=?',
         hideNotFound: '=?',
+        listMaxItems: '=?',
         onSelect: '&'
       },
       link: function (scope, element) {
