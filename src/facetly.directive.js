@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function FacetlyDirective(Utils, DEFAULT_OPTIONS) {
+  function FacetlyDirective($timeout, Utils, DEFAULT_OPTIONS) {
 
     return {
       restrict: 'E',
@@ -78,7 +78,9 @@
 
           if (validationPassed && typeof scope.doSearch === 'function') {
             scope.filteredBy = Utils.updateModel(scope.filters);
-            scope.doSearch();
+            $timeout(function () {
+              scope.doSearch();
+            });
             scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
           }
         };
@@ -104,7 +106,7 @@
     };
   }
 
-  FacetlyDirective.$inject = ['FacetlyUtils', 'DEFAULT_OPTIONS'];
+  FacetlyDirective.$inject = ['$timeout', 'FacetlyUtils', 'DEFAULT_OPTIONS'];
 
   angular.module('ngFacetly')
     .directive('facetly', FacetlyDirective);
