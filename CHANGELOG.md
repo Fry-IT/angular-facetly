@@ -1,3 +1,9 @@
+###v0.1.4
+___
+
+* Move Remove all button to the right of Search ([tricinel](http://github.com/tricinel))
+* Add  when doing search() ([tricinel](http://github.com/tricinel))
+
 ###v0.1.3
 ___
 
