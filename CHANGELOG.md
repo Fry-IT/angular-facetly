@@ -1,3 +1,9 @@
+###v0.1.3
+___
+
+* Add validation to filters ([tricinel](http://github.com/tricinel))
+* Add limit for how many options to display in the typeahead ([tricinel](http://github.com/tricinel))
+
 ###v0.1.2
 ___
 
