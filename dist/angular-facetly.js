@@ -21,7 +21,7 @@
 (function () {
   'use strict';
 
-  function FacetlyDirective(Utils, DEFAULT_OPTIONS) {
+  function FacetlyDirective($timeout, Utils, DEFAULT_OPTIONS) {
 
     return {
       restrict: 'E',
@@ -98,7 +98,9 @@
 
           if (validationPassed && typeof scope.doSearch === 'function') {
             scope.filteredBy = Utils.updateModel(scope.filters);
-            scope.doSearch();
+            $timeout(function () {
+              scope.doSearch();
+            });
             scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
           }
         };
@@ -124,7 +126,7 @@
     };
   }
 
-  FacetlyDirective.$inject = ['FacetlyUtils', 'DEFAULT_OPTIONS'];
+  FacetlyDirective.$inject = ['$timeout', 'FacetlyUtils', 'DEFAULT_OPTIONS'];
 
   angular.module('ngFacetly')
     .directive('facetly', FacetlyDirective);
@@ -645,7 +647,7 @@
 
 })();
 
-angular.module("ngFacetly").run(["$templateCache", function($templateCache) {$templateCache.put("angular-facetly.html","<div class=\"facetly\">\n  <div class=\"facetly-search\">\n    <div class=\"facetly-searchbox\">\n      <ul class=\"facetly-filters\">\n        <facetly-filter\n          ng-repeat=\"filter in filters\"\n          filter=\"filter\"\n          list-max-items=\"options.listMaxItems\"\n          on-filter-remove=\"removeFilter(id)\"\n          on-do-search=\"search()\"\n          should-focus=\"filters.indexOf(filter) === focusIndex\" />\n      </ul>\n\n      <facetly-typeahead\n        ng-show=\"filters.length !== facets.length\"\n        query=\"query\"\n        facets=\"typeaheadSuggestions\"\n        hide-not-found=\"options.defaultFacet && !filters.length\"\n        on-select=\"addTypeaheadSuggestion(value)\"\n        placeholder=\"{{options.placeholder}}\" />\n    </div>\n\n    <div class=\"facetly-buttons\">\n      <a class=\"facetly-button facetly-button-danger\" href=\"\" ng-if=\"filters.length\" ng-click=\"removeAllFilters()\">Remove all</a>\n      <a href=\"\" class=\"facetly-button facetly-button-success\" ng-click=\"search()\">Search</a>\n    </div>\n  </div>\n\n  <p class=\"facetly-hint-text facetly-text-gray\">Hint: You can use advanced search keywords to more easily find what you’re looking for. <a href=\"\" ng-click=\"showFacets=!showFacets\">What keywords can I use?</a></p>\n\n  <p class=\"facetly-hint-text facetly-text-danger\" ng-show=\"errors.length\">\n    Please correct the following errors before continuing:\n    <ul>\n      <li ng-repeat=\"error in errors\" ng-bind=\"error\"></li>\n    </ul>\n  </p>\n\n  <ul class=\"facetly-facets\" ng-show=\"showFacets\">\n    <li ng-repeat=\"facet in facets | filter:availableFacets\">\n      <a class=\"facetly-facet\" href=\"\" title=\"\" ng-click=\"addFilter(facet)\" ng-bind=\"facet.label\"></a>\n    </li>\n  </ul>\n</div>\n");
+angular.module("ngFacetly").run(["$templateCache", function($templateCache) {$templateCache.put("angular-facetly.html","<div class=\"facetly\">\n  <div class=\"facetly-search\">\n    <div class=\"facetly-searchbox\">\n      <ul class=\"facetly-filters\">\n        <facetly-filter\n          ng-repeat=\"filter in filters\"\n          filter=\"filter\"\n          list-max-items=\"options.listMaxItems\"\n          on-filter-remove=\"removeFilter(id)\"\n          on-do-search=\"search()\"\n          should-focus=\"filters.indexOf(filter) === focusIndex\" />\n      </ul>\n\n      <facetly-typeahead\n        ng-show=\"filters.length !== facets.length\"\n        query=\"query\"\n        facets=\"typeaheadSuggestions\"\n        hide-not-found=\"options.defaultFacet && !filters.length\"\n        on-select=\"addTypeaheadSuggestion(value)\"\n        placeholder=\"{{options.placeholder}}\" />\n    </div>\n\n    <div class=\"facetly-buttons\">\n      <a href=\"\" class=\"facetly-button facetly-button-success\" ng-click=\"search()\">Search</a>\n      <a class=\"facetly-button facetly-button-danger\" href=\"\" ng-if=\"filters.length\" ng-click=\"removeAllFilters()\">Remove all</a>\n    </div>\n  </div>\n\n  <p class=\"facetly-hint-text facetly-text-gray\">Hint: You can use advanced search keywords to more easily find what you’re looking for. <a href=\"\" ng-click=\"showFacets=!showFacets\">What keywords can I use?</a></p>\n\n  <p class=\"facetly-hint-text facetly-text-danger\" ng-show=\"errors.length\">\n    Please correct the following errors before continuing:\n    <ul>\n      <li ng-repeat=\"error in errors\" ng-bind=\"error\"></li>\n    </ul>\n  </p>\n\n  <ul class=\"facetly-facets\" ng-show=\"showFacets\">\n    <li ng-repeat=\"facet in facets | filter:availableFacets\">\n      <a class=\"facetly-facet\" href=\"\" title=\"\" ng-click=\"addFilter(facet)\" ng-bind=\"facet.label\"></a>\n    </li>\n  </ul>\n</div>\n");
 $templateCache.put("facets/hierarchy.html","<div class=\"facetly-hierarchy\">\n\n  <facetly-typeahead\n    allow-multiselect=\"allowMultiselect\"\n    query=\"query\"\n    facets=\"typeaheadSuggestions\"\n    on-select=\"addTypeaheadSuggestion(value)\"\n    list-max-items=\"listMaxItems\"\n    placeholder=\"Start typing to filter...\" />\n\n</div>\n");
 $templateCache.put("facets/select.html","<div class=\"facetly-select\">\n\n  <facetly-typeahead\n    allow-multiselect=\"allowMultiselect\"\n    query=\"query\"\n    facets=\"typeaheadSuggestions\"\n    on-select=\"addTypeaheadSuggestion(value)\"\n    list-max-items=\"listMaxItems\"\n    placeholder=\"Start typing to filter...\" />\n\n</div>\n");
 $templateCache.put("filter/filter.html","<li ng-class=\"{\'facetly-validation-error\': filter.isValid === false}\">\n  <span class=\"facetly-facet\">\n    <a class=\"facetly-icon facetly-text-danger\" href=\"\" tabindex=\"-1\" ng-click=\"remove()\"> &times; </a>\n    {{::filter.label}}:\n  </span>\n  <span class=\"facetly-value\" ng-switch=\"filter.type\">\n    <facetly-select ng-switch-when=\"select\" options=\"filter.options\" allow-multiselect=\"filter.multiselect\" on-select-change=\"updateFilterValue(value)\" list-max-items=\"listMaxItems\" />\n    <facetly-hierarchy ng-switch-when=\"hierarchy\" options=\"filter.options\" allow-multiselect=\"filter.multiselect\" on-select-change=\"updateFilterValue(value)\" list-max-items=\"listMaxItems\" />\n    <input ng-switch-default type=\"text\" class=\"facetly-form-control\" ng-model=\"filter.value\" />\n  </span>\n</li>\n");
