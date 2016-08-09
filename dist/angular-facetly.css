@@ -106,12 +106,16 @@
 
 .facetly-filters {
   display: inline-block; }
-  .facetly-filters > li .facetly-facet {
-    margin: 4px; }
-  .facetly-filters > li .facetly-value {
-    background-color: #fff;
-    border-radius: 15px;
-    padding: 0px 6px; }
+  .facetly-filters > li {
+    border: 1px solid transparent; }
+    .facetly-filters > li.facetly-validation-error {
+      border-color: #e74c3c; }
+    .facetly-filters > li .facetly-facet {
+      margin: 4px; }
+    .facetly-filters > li .facetly-value {
+      background-color: #fff;
+      border-radius: 15px;
+      padding: 0px 6px; }
 
 .facetly-facet {
   padding-left: 8px;
