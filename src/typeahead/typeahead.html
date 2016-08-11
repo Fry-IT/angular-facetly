@@ -15,7 +15,7 @@
 
   <div class="facetly-typeahead-suggestions" ng-show="showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))">
     <ul>
-      <li class="facetly-suggestion" ng-repeat="suggestion in suggestions"
+      <li class="facetly-suggestion" ng-class="{'last': $last}" ng-repeat="suggestion in suggestions"
         ng-class="{'selected': suggestions.indexOf(suggestion) === selectedIndex}"
         ng-mouseenter="updateSelectedIndex(suggestions.indexOf(suggestion))">
           <a href="" ng-click="addSuggested(suggestion)">
@@ -23,7 +23,7 @@
             <span ng-bind-html="suggestion | facetlyHighlight:query"></span>
           </a>
       </li>
-      <li ng-show="query.length && !suggestions.length && !hideNotFound">
+      <li class="last" ng-show="query.length && !suggestions.length && !hideNotFound">
         <span>No match found...</span>
       </li>
     </ul>
