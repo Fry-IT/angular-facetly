@@ -3,8 +3,12 @@
 var deepFreeze = function deepFreeze(o) {
   Object.freeze(o);
 
+  var oIsFunction = typeof o === 'function';
+  var hasOwnProp = Object.prototype.hasOwnProperty;
+
   Object.getOwnPropertyNames(o).forEach(function (prop) {
-    if (o.hasOwnProperty(prop)
+    if (hasOwnProp.call(o, prop)
+    && (oIsFunction ? prop !== 'caller' && prop !== 'callee' && prop !== 'arguments' : true)
     && o[prop] !== null
     && (typeof o[prop] === 'object' || typeof o[prop] === 'function')
     && !Object.isFrozen(o[prop])) {
@@ -43,18 +47,34 @@ var filteredBy = {
   filterTwo: 'Value two'
 };
 
+deepFreeze(filters);
+deepFreeze(facets);
+
 describe('Facetly Utils', function () {
 
   beforeEach(module('ngFacetly'));
 
-  var Utils;
+  var Utils, log, q;
 
-  deepFreeze(filters);
-  deepFreeze(facets);
-
-  beforeEach(inject(function (_FacetlyUtils_) {
+  beforeEach(inject(function (_FacetlyUtils_, _$log_, _$q_) {
     Utils = _FacetlyUtils_;
+    log = _$log_;
+    q = _$q_;
   }));
+
+  it('should set facets', function () {
+    var facetsAfter = facets.concat([{
+          id: 'filterPromise',
+          label: 'Filter promise',
+          type: 'select',
+          options: promise
+        }]);
+    var promise = function () {
+      return $q.when([{ id: 'optionOne', title: 'Option 1' }]);
+    };
+
+    expect(Utils.setFacets(facetsAfter).length).toEqual(facets.length + 1);
+  });
 
   it('should set filters', function () {
     var setFilters = Utils.setFilters(filteredBy, facets);
@@ -143,10 +163,12 @@ describe('Facetly Utils', function () {
         }
       }
     ];
+    deepFreeze(newFilters);
+
     var filtersAfter = Utils.validateValues(newFilters);
-    var invalidFilters = newFilters.slice();
-    invalidFilters[0].isValid = false;
-    invalidFilters[0].messages = ['Filter one: Not valid'];
+    var invalidFilters = _.map(newFilters, function (filter, index) {
+      return index === 0 ? _.assign({}, filter, { isValid: false, messages: ['Not valid'] }) : filter;
+    });
 
     expect(filtersAfter).toEqual(invalidFilters);
   });
@@ -167,6 +189,8 @@ describe('Facetly Utils', function () {
         }
       }
     ];
+    deepFreeze(newFilters);
+
     var filtersAfter = Utils.validateValues(newFilters);
     var invalidFilters = newFilters.slice();
 
@@ -190,6 +214,8 @@ describe('Facetly Utils', function () {
         }
       }
     ];
+    deepFreeze(newFilters);
+
     var validationErrors = Utils.collectValidationErrors(newFilters);
 
     expect(validationErrors).toEqual(['Filter one: Not valid']);
