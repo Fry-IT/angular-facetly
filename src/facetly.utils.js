@@ -24,6 +24,7 @@
 
     service.setFacets = function (facets) {
       return _.map(facets, function (facet) {
+        facet = _.assign({}, facet);
         facet.isLoading = true;
         $q.when(typeof facet.options === 'function' ? facet.options() : facet.options)
           .then(function (results) {
@@ -95,6 +96,8 @@
 
     service.validateValues = function (filters) {
       return _.map(filters, function (filter) {
+        filter = _.assign({}, filter);
+
         // Cleanup
         delete filter.isValid;
         delete filter.messages;
