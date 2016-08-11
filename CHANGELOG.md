@@ -1,3 +1,11 @@
+###v0.1.5
+___
+
+* Fix some immutability errors ([tricinel](http://github.com/tricinel))
+* Fix border-bottom for last suggestion in typeahead ([tricinel](http://github.com/tricinel))
+* Add limit for long titles in typeahead ([tricinel](http://github.com/tricinel))
+* Add support for  promises as facet options ([tricinel](http://github.com/tricinel))
+
 ###v0.1.4
 ___
 
