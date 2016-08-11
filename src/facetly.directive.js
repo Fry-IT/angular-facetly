@@ -10,7 +10,7 @@
       scope: {
         options: '=?',
         filteredBy: '=ngModel',
-        facets: '=',
+        unformattedFacets: '=facets',
         doSearch: '&?'
       },
       link: function (scope) {
@@ -27,6 +27,8 @@
         };
 
         scope.options = _.assign({}, DEFAULT_OPTIONS, scope.options);
+
+        scope.facets = Utils.setFacets(scope.unformattedFacets);
 
         scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
 
@@ -52,7 +54,7 @@
 
         scope.availableFacets = function (facet) {
           var filters = scope.filters || [];
-          return _.findIndex(filters, { id: facet.id }) === -1;
+          return facet.isLoading !== true && _.findIndex(filters, { id: facet.id }) === -1;
         };
 
         scope.search = function () {

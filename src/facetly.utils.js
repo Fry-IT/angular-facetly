@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function FacetlyUtils($log) {
+  function FacetlyUtils($log, $q) {
 
     var service = {};
 
@@ -20,6 +20,19 @@
       }
 
       return filters;
+    };
+
+    service.setFacets = function (facets) {
+      return _.map(facets, function (facet) {
+        facet.isLoading = true;
+        $q.when(typeof facet.options === 'function' ? facet.options() : facet.options)
+          .then(function (results) {
+            facet.options = results;
+            facet.isLoading = false;
+          });
+
+        return facet;
+      });
     };
 
     service.findFilterByKey = function (filters, key, value) {
@@ -120,7 +133,7 @@
     return service;
   }
 
-  FacetlyUtils.$inject = ['$log'];
+  FacetlyUtils.$inject = ['$log', '$q'];
 
   angular.module('ngFacetly')
     .service('FacetlyUtils', FacetlyUtils);

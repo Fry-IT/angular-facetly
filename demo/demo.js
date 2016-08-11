@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function MainController($timeout) {
+  function MainController($timeout, $q) {
     var vm = this;
 
     // $timeout(function () {
@@ -22,6 +22,29 @@
 
     vm.doSearch = function () {
       vm.showModel = true;
+    };
+
+    var promise = function (delay) {
+      return $timeout(function () {
+        return [
+          {
+            id: '123123189002',
+            title: 'Complete'
+          },
+          {
+            id: '123234613762783189002',
+            title: 'In progress'
+          },
+          {
+            id: '126789022378223',
+            title: 'Draft'
+          },
+          {
+            id: '4567583456467457',
+            title: 'Submitted'
+          }
+        ];
+      }, delay || 3000);
     };
 
     vm.facets = [
@@ -83,24 +106,8 @@
         label: 'Event state',
         type: 'select',
         multiselect: true,
-        options: [
-          {
-            id: '123123189002',
-            title: 'Complete'
-          },
-          {
-            id: '123234613762783189002',
-            title: 'In progress'
-          },
-          {
-            id: '126789022378223',
-            title: 'Draft'
-          },
-          {
-            id: '4567583456467457',
-            title: 'Submitted'
-          }
-        ]
+        // options: promise(3000)
+        options: promise
       },
       {
         id: 'blueprint',
@@ -140,7 +147,7 @@
     ];
   }
 
-  MainController.$inject = ['$timeout'];
+  MainController.$inject = ['$timeout', '$q'];
 
   var app = angular.module('facetlyDemo', ['ngFacetly']);
 
