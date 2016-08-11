@@ -30,7 +30,7 @@
       scope: {
         options: '=?',
         filteredBy: '=ngModel',
-        facets: '=',
+        unformattedFacets: '=facets',
         doSearch: '&?'
       },
       link: function (scope) {
@@ -47,6 +47,8 @@
         };
 
         scope.options = _.assign({}, DEFAULT_OPTIONS, scope.options);
+
+        scope.facets = Utils.setFacets(scope.unformattedFacets);
 
         scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
 
@@ -72,7 +74,7 @@
 
         scope.availableFacets = function (facet) {
           var filters = scope.filters || [];
-          return _.findIndex(filters, { id: facet.id }) === -1;
+          return facet.isLoading !== true && _.findIndex(filters, { id: facet.id }) === -1;
         };
 
         scope.search = function () {
@@ -136,7 +138,7 @@
 (function () {
   'use strict';
 
-  function FacetlyUtils($log) {
+  function FacetlyUtils($log, $q) {
 
     var service = {};
 
@@ -155,6 +157,20 @@
       }
 
       return filters;
+    };
+
+    service.setFacets = function (facets) {
+      return _.map(facets, function (facet) {
+        facet = _.assign({}, facet);
+        facet.isLoading = true;
+        $q.when(typeof facet.options === 'function' ? facet.options() : facet.options)
+          .then(function (results) {
+            facet.options = results;
+            facet.isLoading = false;
+          });
+
+        return facet;
+      });
     };
 
     service.findFilterByKey = function (filters, key, value) {
@@ -217,6 +233,8 @@
 
     service.validateValues = function (filters) {
       return _.map(filters, function (filter) {
+        filter = _.assign({}, filter);
+
         // Cleanup
         delete filter.isValid;
         delete filter.messages;
@@ -255,10 +273,80 @@
     return service;
   }
 
-  FacetlyUtils.$inject = ['$log'];
+  FacetlyUtils.$inject = ['$log', '$q'];
 
   angular.module('ngFacetly')
     .service('FacetlyUtils', FacetlyUtils);
+
+})();
+
+(function () {
+  'use strict';
+
+  function FacetlyFilterDirective() {
+
+    return {
+      restrict: 'E',
+      replace: true,
+      templateUrl: 'filter/filter.html',
+      scope: {
+        filter: '=',
+        listMaxItems: '=?',
+        onFilterRemove: '&',
+        onDoSearch: '&'
+      },
+      link: function (scope, element, attrs) {
+        var tagName;
+
+        switch (scope.filter.type) {
+          case 'select':
+            tagName = 'input';
+            break;
+          default:
+            tagName = 'input';
+            break;
+        }
+
+        // Watch for keydown events
+        element.on('keydown', function (event) {
+          if (scope.filter.value === 0 || event.which !== 13 /* the enter key*/) {
+            return;
+          }
+
+          event.preventDefault();
+
+          scope.onDoSearch();
+          scope.$apply();
+        });
+
+        // Watch for focus
+        scope.$watch(attrs.shouldFocus, function (value, oldValue) {
+          if (value === true) {
+            element.find(tagName)[0].focus();
+            scope[attrs.shouldFocus] = false;
+          }
+        });
+
+        // Handle the filter update from a select/multiselect
+        scope.updateFilterValue = function (value) {
+          scope.filter.value = value;
+        };
+
+        // Handle the filter removal
+        scope.remove = function () {
+          scope.onFilterRemove({ id: scope.filter.id });
+        };
+
+        scope.$on('$destroy', function () {
+          element.off('keydown');
+        });
+
+      }
+    };
+  }
+
+  angular.module('ngFacetly')
+    .directive('facetlyFilter', FacetlyFilterDirective);
 
 })();
 
@@ -339,76 +427,6 @@
 
   angular.module('ngFacetly')
     .directive('facetlySelect', FacetlySelect);
-
-})();
-
-(function () {
-  'use strict';
-
-  function FacetlyFilterDirective() {
-
-    return {
-      restrict: 'E',
-      replace: true,
-      templateUrl: 'filter/filter.html',
-      scope: {
-        filter: '=',
-        listMaxItems: '=?',
-        onFilterRemove: '&',
-        onDoSearch: '&'
-      },
-      link: function (scope, element, attrs) {
-        var tagName;
-
-        switch (scope.filter.type) {
-          case 'select':
-            tagName = 'input';
-            break;
-          default:
-            tagName = 'input';
-            break;
-        }
-
-        // Watch for keydown events
-        element.on('keydown', function (event) {
-          if (scope.filter.value === 0 || event.which !== 13 /* the enter key*/) {
-            return;
-          }
-
-          event.preventDefault();
-
-          scope.onDoSearch();
-          scope.$apply();
-        });
-
-        // Watch for focus
-        scope.$watch(attrs.shouldFocus, function (value, oldValue) {
-          if (value === true) {
-            element.find(tagName)[0].focus();
-            scope[attrs.shouldFocus] = false;
-          }
-        });
-
-        // Handle the filter update from a select/multiselect
-        scope.updateFilterValue = function (value) {
-          scope.filter.value = value;
-        };
-
-        // Handle the filter removal
-        scope.remove = function () {
-          scope.onFilterRemove({ id: scope.filter.id });
-        };
-
-        scope.$on('$destroy', function () {
-          element.off('keydown');
-        });
-
-      }
-    };
-  }
-
-  angular.module('ngFacetly')
-    .directive('facetlyFilter', FacetlyFilterDirective);
 
 })();
 
@@ -651,4 +669,4 @@ angular.module("ngFacetly").run(["$templateCache", function($templateCache) {$te
 $templateCache.put("facets/hierarchy.html","<div class=\"facetly-hierarchy\">\n\n  <facetly-typeahead\n    allow-multiselect=\"allowMultiselect\"\n    query=\"query\"\n    facets=\"typeaheadSuggestions\"\n    on-select=\"addTypeaheadSuggestion(value)\"\n    list-max-items=\"listMaxItems\"\n    placeholder=\"Start typing to filter...\" />\n\n</div>\n");
 $templateCache.put("facets/select.html","<div class=\"facetly-select\">\n\n  <facetly-typeahead\n    allow-multiselect=\"allowMultiselect\"\n    query=\"query\"\n    facets=\"typeaheadSuggestions\"\n    on-select=\"addTypeaheadSuggestion(value)\"\n    list-max-items=\"listMaxItems\"\n    placeholder=\"Start typing to filter...\" />\n\n</div>\n");
 $templateCache.put("filter/filter.html","<li ng-class=\"{\'facetly-validation-error\': filter.isValid === false}\">\n  <span class=\"facetly-facet\">\n    <a class=\"facetly-icon facetly-text-danger\" href=\"\" tabindex=\"-1\" ng-click=\"remove()\"> &times; </a>\n    {{::filter.label}}:\n  </span>\n  <span class=\"facetly-value\" ng-switch=\"filter.type\">\n    <facetly-select ng-switch-when=\"select\" options=\"filter.options\" allow-multiselect=\"filter.multiselect\" on-select-change=\"updateFilterValue(value)\" list-max-items=\"listMaxItems\" />\n    <facetly-hierarchy ng-switch-when=\"hierarchy\" options=\"filter.options\" allow-multiselect=\"filter.multiselect\" on-select-change=\"updateFilterValue(value)\" list-max-items=\"listMaxItems\" />\n    <input ng-switch-default type=\"text\" class=\"facetly-form-control\" ng-model=\"filter.value\" />\n  </span>\n</li>\n");
-$templateCache.put("typeahead/typeahead.html","<div class=\"facetly-typeahead\">\n  <div class=\"facetly-typeahead-selected\" ng-show=\"showSelected\">\n    <span ng-repeat=\"value in selected\">\n      <a class=\"facetly-icon facetly-text-danger\" href=\"\" tabindex=\"-1\" ng-click=\"removeSelected(value)\">&times;</a> {{value}}\n    </span>\n  </div>\n\n  <input\n    class=\"facetly-form-control\"\n    type=\"text\"\n    ng-model=\"query\"\n    ng-focus=\"showSuggestions=true\"\n    ng-click=\"showSuggestions=true\"\n    placeholder=\"{{placeholder}}\">\n\n  <div class=\"facetly-typeahead-suggestions\" ng-show=\"showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))\">\n    <ul>\n      <li class=\"facetly-suggestion\" ng-repeat=\"suggestion in suggestions\"\n        ng-class=\"{\'selected\': suggestions.indexOf(suggestion) === selectedIndex}\"\n        ng-mouseenter=\"updateSelectedIndex(suggestions.indexOf(suggestion))\">\n          <a href=\"\" ng-click=\"addSuggested(suggestion)\">\n            <span ng-if=\"allowMultiselect && selected.indexOf(suggestion) !== -1\">&#10004;</span>\n            <span ng-bind-html=\"suggestion | facetlyHighlight:query\"></span>\n          </a>\n      </li>\n      <li ng-show=\"query.length && !suggestions.length && !hideNotFound\">\n        <span>No match found...</span>\n      </li>\n    </ul>\n  </div>\n</div>\n");}]);
+$templateCache.put("typeahead/typeahead.html","<div class=\"facetly-typeahead\">\n  <div class=\"facetly-typeahead-selected\" ng-show=\"showSelected\">\n    <span ng-repeat=\"value in selected\">\n      <a class=\"facetly-icon facetly-text-danger\" href=\"\" tabindex=\"-1\" ng-click=\"removeSelected(value)\">&times;</a> {{value}}\n    </span>\n  </div>\n\n  <input\n    class=\"facetly-form-control\"\n    type=\"text\"\n    ng-model=\"query\"\n    ng-focus=\"showSuggestions=true\"\n    ng-click=\"showSuggestions=true\"\n    placeholder=\"{{placeholder}}\">\n\n  <div class=\"facetly-typeahead-suggestions\" ng-show=\"showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))\">\n    <ul>\n      <li class=\"facetly-suggestion\" ng-class=\"{\'last\': $last}\" ng-repeat=\"suggestion in suggestions\"\n        ng-class=\"{\'selected\': suggestions.indexOf(suggestion) === selectedIndex}\"\n        ng-mouseenter=\"updateSelectedIndex(suggestions.indexOf(suggestion))\">\n          <a href=\"\" ng-click=\"addSuggested(suggestion)\">\n            <span ng-if=\"allowMultiselect && selected.indexOf(suggestion) !== -1\">&#10004;</span>\n            <span ng-bind-html=\"suggestion | facetlyHighlight:query\"></span>\n          </a>\n      </li>\n      <li class=\"last\" ng-show=\"query.length && !suggestions.length && !hideNotFound\">\n        <span>No match found...</span>\n      </li>\n    </ul>\n  </div>\n</div>\n");}]);
