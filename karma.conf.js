@@ -6,6 +6,7 @@ module.exports = function (config) {
     frameworks: ['jasmine'],
     files: [
       'bower_components/angular/angular.js',
+      'bower_components/angular-sanitize/angular-sanitize.js',
       'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/lodash/lodash.js',
       'bower_components/angular-lodash/angular-lodash.js',
