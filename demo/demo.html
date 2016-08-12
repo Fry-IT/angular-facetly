@@ -33,13 +33,14 @@
 </head>
 <body>
   <div id="facetly-demo" data-ng-controller="MainController as vm">
-    <facetly facets="vm.facets" options="vm.options" ng-model="vm.model" do-search="vm.doSearch()"></facetly>
+    <facetly facets="vm.facets" options="vm.options" ng-model="vm.model" applied-filters="vm.appliedFilters" do-search="vm.doSearch()"></facetly>
 
     <hr/>
 
     <pre ng-show="vm.showModel">
       <p>Search model:</p>
       {{vm.model | json}}
+      {{vm.appliedFilters | json}}
     </pre>
   </div>
 

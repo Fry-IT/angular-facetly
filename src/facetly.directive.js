@@ -10,6 +10,7 @@
       scope: {
         options: '=?',
         filteredBy: '=ngModel',
+        appliedFilters: '=',
         unformattedFacets: '=facets',
         doSearch: '&?'
       },
@@ -80,6 +81,7 @@
 
           if (validationPassed && typeof scope.doSearch === 'function') {
             scope.filteredBy = Utils.updateModel(scope.filters);
+            scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
             $timeout(function () {
               scope.doSearch();
             });

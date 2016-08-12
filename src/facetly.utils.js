@@ -71,6 +71,51 @@
       return filteredBy;
     };
 
+    service.updateAppliedFilters = function (filters) {
+      var appliedFilters = {};
+
+      for (var i = 0; i < filters.length; i++) {
+        if (!_.isUndefined(filters[i].value)) {
+          appliedFilters[filters[i].label] = this.getValueForFilterByType(filters[i]);
+        }
+      }
+
+      return appliedFilters;
+    };
+
+    service.getValueForFilterByType = function (filter) {
+      var extractTitles = function (options, values) {
+        return _.chain(options)
+                .filter(function (item) {
+                  return _.indexOf(values, item.id) !== -1;
+                })
+                .map(function (item) {
+                  return item.title;
+                })
+                .value();
+      };
+
+      switch (filter.type) {
+        case 'select':
+          if (filter.multiselect) {
+            return extractTitles(filter.options, filter.value);
+          } else {
+            return _.find(filter.options, { id: filter.value }).title;
+          }
+
+        case 'hierarchy':
+          var flat = this.flatten(filter.options);
+          if (filter.multiselect) {
+            return extractTitles(flat, filter.value);
+          } else {
+            return _.find(flat, { id: filter.value }).title;
+          }
+
+        default:
+          return filter.value;
+      }
+    };
+
     service.flatten = function (array, flat) {
       flat = [] || flat;
       _.forEach(array, function (item) {

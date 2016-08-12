@@ -221,4 +221,29 @@ describe('Facetly Utils', function () {
     expect(validationErrors).toEqual(['Filter one: Not valid']);
   });
 
+  it('should get the title value from a text filter', function () {
+    var filter = { id: 'filterOne', label: 'Filter one', value: 'test', type: 'text' };
+    expect(Utils.getValueForFilterByType(filter)).toEqual('test');
+  });
+
+  it('should get the title value from a select filter', function () {
+    var filter = { id: 'filterOne', label: 'Filter one', value: '123', type: 'select', options: [{ id: '123', title: 'Test' }] };
+    expect(Utils.getValueForFilterByType(filter)).toEqual('Test');
+  });
+
+  it('should get the title value from a hierarchy filter', function () {
+    var filter = { id: 'filterOne', label: 'Filter one', value: '456', type: 'hierarchy', options: [{ id: '123', title: 'Test', categories: [{ id: '456', title: 'Category' }] }] };
+    expect(Utils.getValueForFilterByType(filter)).toEqual('Category');
+  });
+
+  it('should get the title value from a multiselect filter', function () {
+    var filter = { id: 'filterOne', label: 'Filter one', value: ['123', '456'], type: 'select', options: [{ id: '123', title: 'Test' }, { id: '456', title: 'Test 2' }], multiselect: true };
+    expect(Utils.getValueForFilterByType(filter)).toEqual(['Test', 'Test 2']);
+  });
+
+  it('should update the applied filters', function () {
+    var appliedFilters = Utils.updateAppliedFilters(filters);
+    expect(appliedFilters).toEqual({ 'Filter one': 'Value one', 'Filter two': 'Value two' });
+  });
+
 });

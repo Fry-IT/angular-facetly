@@ -13,6 +13,7 @@
     // };
 
     vm.model = {};
+    vm.appliedFilters = {};
 
     vm.options = {
       defaultFacet: 'keywords',
