@@ -1,3 +1,8 @@
+###v0.1.7
+___
+
+* Add track by  to avoid Duplicates error ([tricinel](http://github.com/tricinel))
+
 ###v0.1.6
 ___
 
