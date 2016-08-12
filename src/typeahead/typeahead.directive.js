@@ -156,9 +156,17 @@
         // Watch the query
         scope.$watch('query', function (value, oldValue) {
           if (value !== oldValue || value === '') {
-            scope.selectedIndex = -1;
-            scope.suggestions = suggest(value, scope.facets);
-            updateSelected(value);
+            // try to optimize how many letters to initiate the search after
+            if (
+              (scope.suggestions.length > 1000 && value.length > 5) ||
+              (scope.suggestions.length > 500 && value.length > 3) ||
+              (scope.suggestions.length > 100 && value.length > 2) ||
+              (scope.suggestions.length <= 100 && value.length > -1)
+            ) {
+              scope.selectedIndex = -1;
+              scope.suggestions = suggest(value, scope.facets);
+              updateSelected(value);
+            }
           }
         });
 

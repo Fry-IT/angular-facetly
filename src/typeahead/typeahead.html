@@ -13,7 +13,7 @@
     ng-click="showSuggestions=true"
     placeholder="{{placeholder}}">
 
-  <div class="facetly-typeahead-suggestions" ng-show="showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))">
+  <div class="facetly-typeahead-suggestions" ng-if="showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))">
     <ul>
       <li class="facetly-suggestion" ng-class="{'last': $last}" ng-repeat="suggestion in suggestions track by $index"
         ng-class="{'selected': suggestions.indexOf(suggestion) === selectedIndex}"
