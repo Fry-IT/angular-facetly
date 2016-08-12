@@ -1,3 +1,9 @@
+###v0.1.6
+___
+
+* Fix typeahead suggestions including facets with unresolved promises ([tricinel](http://github.com/tricinel))
+* Add applied filters with data binding ([tricinel](http://github.com/tricinel))
+
 ###v0.1.5
 ___
 
