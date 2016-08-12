@@ -19,7 +19,14 @@
         var updateTypeaheadSuggestions = function (facets, filters) {
           return _.chain(facets)
                   .filter(function (facet) {
-                    return _.findIndex(filters, { id: facet.id }) === -1;
+                    if (
+                      facet.type === 'text' ||
+                      (facet.type !== 'text' && _.isArray(facet.options))
+                    ) {
+                      return _.findIndex(filters, { id: facet.id }) === -1;
+                    } else {
+                      return false;
+                    }
                   })
                   .map(function (facet) {
                     return facet.label;
@@ -33,7 +40,7 @@
 
         scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
 
-        scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
+        scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.unformattedFacets, scope.filters);
 
         scope.addFilter = function (facet) {
           scope.filters = Utils.addFilter(scope.filters, facet);
@@ -98,6 +105,13 @@
             scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
           }
         };
+
+        // Wathc the facets
+        scope.$watch('facets', function (value, oldValue) {
+          if (value !== oldValue) {
+            scope.typeaheadSuggestions = updateTypeaheadSuggestions(value, scope.filters);
+          }
+        }, true);
 
         // Watch the model
         scope.$watch('filteredBy', function (value, oldValue) {
