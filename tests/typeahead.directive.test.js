@@ -21,7 +21,7 @@ describe('Facetly Typeahead Directive', function () {
 
       // scope.hideNotFound = false;
       // scope.placeholder = 'Search...';
-      // scope.allowMultiSelect = false;
+      // scope.allowMultiselect = false;
       // scope.listMaxItems = 0;
       scope.onSelect = jasmine.createSpy('onSelect');
     });
@@ -31,7 +31,7 @@ describe('Facetly Typeahead Directive', function () {
   });
 
   function getCompiledElement() {
-    var elem = '<facetly-typeahead facets="facets" query="query" hide-not-found="hideNotFound" placeholder="placeholder" allow-multi-select="allowMultiSelect" list-max-items="listMaxItems" on-select="onSelect(value)" />';
+    var elem = '<facetly-typeahead facets="facets" query="query" hide-not-found="hideNotFound" placeholder="placeholder" allow-multiselect="allowMultiselect" list-max-items="listMaxItems" on-select="onSelect(value)" />';
     var compiledDirective = compile(angular.element(elem))(scope);
     scope.$digest();
     return compiledDirective;
@@ -59,6 +59,27 @@ describe('Facetly Typeahead Directive', function () {
 
     expect(isolatedScope.showSuggestions).toBe(false);
     expect(scope.onSelect).toHaveBeenCalled();
+  });
+
+  it('should add a suggestion with multiselect', function () {
+    isolatedScope.allowMultiselect = true;
+    isolatedScope.selected = [];
+    isolatedScope.addSuggested('Filter one');
+
+    expect(isolatedScope.selected).toEqual(['Filter one']);
+    expect(isolatedScope.showSelected).toBe(true);
+    expect(isolatedScope.query).toEqual('');
+    expect(scope.onSelect).toHaveBeenCalled();
+  });
+
+  it('should remove a suggestion from multiselect', function () {
+    isolatedScope.allowMultiselect = true;
+    isolatedScope.selected = [];
+    isolatedScope.addSuggested('Filter one');
+    isolatedScope.addSuggested('Filter two');
+    isolatedScope.removeSelected('Filter one');
+
+    expect(isolatedScope.selected).toEqual(['Filter two']);
   });
 
   it('onSelect should be a function', function () {
