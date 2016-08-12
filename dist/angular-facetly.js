@@ -30,6 +30,7 @@
       scope: {
         options: '=?',
         filteredBy: '=ngModel',
+        appliedFilters: '=',
         unformattedFacets: '=facets',
         doSearch: '&?'
       },
@@ -38,7 +39,14 @@
         var updateTypeaheadSuggestions = function (facets, filters) {
           return _.chain(facets)
                   .filter(function (facet) {
-                    return _.findIndex(filters, { id: facet.id }) === -1;
+                    if (
+                      facet.type === 'text' ||
+                      (facet.type !== 'text' && _.isArray(facet.options))
+                    ) {
+                      return _.findIndex(filters, { id: facet.id }) === -1;
+                    } else {
+                      return false;
+                    }
                   })
                   .map(function (facet) {
                     return facet.label;
@@ -52,7 +60,7 @@
 
         scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
 
-        scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
+        scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.unformattedFacets, scope.filters);
 
         scope.addFilter = function (facet) {
           scope.filters = Utils.addFilter(scope.filters, facet);
@@ -100,6 +108,7 @@
 
           if (validationPassed && typeof scope.doSearch === 'function') {
             scope.filteredBy = Utils.updateModel(scope.filters);
+            scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
             $timeout(function () {
               scope.doSearch();
             });
@@ -116,6 +125,13 @@
             scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
           }
         };
+
+        // Wathc the facets
+        scope.$watch('facets', function (value, oldValue) {
+          if (value !== oldValue) {
+            scope.typeaheadSuggestions = updateTypeaheadSuggestions(value, scope.filters);
+          }
+        }, true);
 
         // Watch the model
         scope.$watch('filteredBy', function (value, oldValue) {
@@ -208,6 +224,51 @@
       return filteredBy;
     };
 
+    service.updateAppliedFilters = function (filters) {
+      var appliedFilters = {};
+
+      for (var i = 0; i < filters.length; i++) {
+        if (!_.isUndefined(filters[i].value)) {
+          appliedFilters[filters[i].label] = this.getValueForFilterByType(filters[i]);
+        }
+      }
+
+      return appliedFilters;
+    };
+
+    service.getValueForFilterByType = function (filter) {
+      var extractTitles = function (options, values) {
+        return _.chain(options)
+                .filter(function (item) {
+                  return _.indexOf(values, item.id) !== -1;
+                })
+                .map(function (item) {
+                  return item.title;
+                })
+                .value();
+      };
+
+      switch (filter.type) {
+        case 'select':
+          if (filter.multiselect) {
+            return extractTitles(filter.options, filter.value);
+          } else {
+            return _.find(filter.options, { id: filter.value }).title;
+          }
+
+        case 'hierarchy':
+          var flat = this.flatten(filter.options);
+          if (filter.multiselect) {
+            return extractTitles(flat, filter.value);
+          } else {
+            return _.find(flat, { id: filter.value }).title;
+          }
+
+        default:
+          return filter.value;
+      }
+    };
+
     service.flatten = function (array, flat) {
       flat = [] || flat;
       _.forEach(array, function (item) {
@@ -277,76 +338,6 @@
 
   angular.module('ngFacetly')
     .service('FacetlyUtils', FacetlyUtils);
-
-})();
-
-(function () {
-  'use strict';
-
-  function FacetlyFilterDirective() {
-
-    return {
-      restrict: 'E',
-      replace: true,
-      templateUrl: 'filter/filter.html',
-      scope: {
-        filter: '=',
-        listMaxItems: '=?',
-        onFilterRemove: '&',
-        onDoSearch: '&'
-      },
-      link: function (scope, element, attrs) {
-        var tagName;
-
-        switch (scope.filter.type) {
-          case 'select':
-            tagName = 'input';
-            break;
-          default:
-            tagName = 'input';
-            break;
-        }
-
-        // Watch for keydown events
-        element.on('keydown', function (event) {
-          if (scope.filter.value === 0 || event.which !== 13 /* the enter key*/) {
-            return;
-          }
-
-          event.preventDefault();
-
-          scope.onDoSearch();
-          scope.$apply();
-        });
-
-        // Watch for focus
-        scope.$watch(attrs.shouldFocus, function (value, oldValue) {
-          if (value === true) {
-            element.find(tagName)[0].focus();
-            scope[attrs.shouldFocus] = false;
-          }
-        });
-
-        // Handle the filter update from a select/multiselect
-        scope.updateFilterValue = function (value) {
-          scope.filter.value = value;
-        };
-
-        // Handle the filter removal
-        scope.remove = function () {
-          scope.onFilterRemove({ id: scope.filter.id });
-        };
-
-        scope.$on('$destroy', function () {
-          element.off('keydown');
-        });
-
-      }
-    };
-  }
-
-  angular.module('ngFacetly')
-    .directive('facetlyFilter', FacetlyFilterDirective);
 
 })();
 
@@ -427,6 +418,76 @@
 
   angular.module('ngFacetly')
     .directive('facetlySelect', FacetlySelect);
+
+})();
+
+(function () {
+  'use strict';
+
+  function FacetlyFilterDirective() {
+
+    return {
+      restrict: 'E',
+      replace: true,
+      templateUrl: 'filter/filter.html',
+      scope: {
+        filter: '=',
+        listMaxItems: '=?',
+        onFilterRemove: '&',
+        onDoSearch: '&'
+      },
+      link: function (scope, element, attrs) {
+        var tagName;
+
+        switch (scope.filter.type) {
+          case 'select':
+            tagName = 'input';
+            break;
+          default:
+            tagName = 'input';
+            break;
+        }
+
+        // Watch for keydown events
+        element.on('keydown', function (event) {
+          if (scope.filter.value === 0 || event.which !== 13 /* the enter key*/) {
+            return;
+          }
+
+          event.preventDefault();
+
+          scope.onDoSearch();
+          scope.$apply();
+        });
+
+        // Watch for focus
+        scope.$watch(attrs.shouldFocus, function (value, oldValue) {
+          if (value === true) {
+            element.find(tagName)[0].focus();
+            scope[attrs.shouldFocus] = false;
+          }
+        });
+
+        // Handle the filter update from a select/multiselect
+        scope.updateFilterValue = function (value) {
+          scope.filter.value = value;
+        };
+
+        // Handle the filter removal
+        scope.remove = function () {
+          scope.onFilterRemove({ id: scope.filter.id });
+        };
+
+        scope.$on('$destroy', function () {
+          element.off('keydown');
+        });
+
+      }
+    };
+  }
+
+  angular.module('ngFacetly')
+    .directive('facetlyFilter', FacetlyFilterDirective);
 
 })();
 
