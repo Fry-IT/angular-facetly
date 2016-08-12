@@ -1,3 +1,8 @@
+###v0.1.8
+___
+
+* Improve typeahead search for large lists ([tricinel](http://github.com/tricinel))
+
 ###v0.1.7
 ___
 
