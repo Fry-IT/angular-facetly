@@ -121,11 +121,11 @@
             categories: [
               {
                 id: '95436-1765',
-                title: 'CI - Item one'
+                title: 'Item one'
               },
               {
                 id: '3456982348675546',
-                title: 'CI - Item two'
+                title: 'Item two'
               }
             ]
           },
@@ -135,7 +135,7 @@
             categories: [
               {
                 id: '9543sadf6-1765',
-                title: 'DoC - Item one'
+                title: 'Item one'
               },
               {
                 id: '43565463778',
