@@ -1,3 +1,8 @@
+###v0.2.1
+___
+
+* Fix minor jshint errors ([tricinel](http://github.com/tricinel))
+
 ###v0.2.0
 ___
 
