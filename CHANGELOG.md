@@ -1,3 +1,8 @@
+###v0.2.0
+___
+
+* Improve typeahead suggestions to handle objects of type id, title ([tricinel](http://github.com/tricinel))
+
 ###v0.1.8
 ___
 
