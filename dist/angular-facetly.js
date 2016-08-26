@@ -288,14 +288,14 @@
           } else {
             return filter.value.title;
           }
-
+          break;
         case 'hierarchy':
           if (filter.multiselect) {
             return _.map(filter.value, function (v) { return v.title; });
           } else {
             return filter.value.title;
           }
-
+          break;
         default:
           return filter.value;
       }
@@ -376,6 +376,76 @@
 (function () {
   'use strict';
 
+  function FacetlyFilterDirective() {
+
+    return {
+      restrict: 'E',
+      replace: true,
+      templateUrl: 'filter/filter.html',
+      scope: {
+        filter: '=',
+        listMaxItems: '=?',
+        onFilterRemove: '&',
+        onDoSearch: '&'
+      },
+      link: function (scope, element, attrs) {
+        var tagName;
+
+        switch (scope.filter.type) {
+          case 'select':
+            tagName = 'input';
+            break;
+          default:
+            tagName = 'input';
+            break;
+        }
+
+        // Watch for keydown events
+        element.on('keydown', function (event) {
+          if (scope.filter.value === 0 || event.which !== 13 /* the enter key*/) {
+            return;
+          }
+
+          event.preventDefault();
+
+          scope.onDoSearch();
+          scope.$apply();
+        });
+
+        // Watch for focus
+        scope.$watch(attrs.shouldFocus, function (value) {
+          if (value === true) {
+            element.find(tagName)[0].focus();
+            scope[attrs.shouldFocus] = false;
+          }
+        });
+
+        // Handle the filter update from a select/multiselect
+        scope.updateFilterValue = function (value) {
+          scope.filter.value = value;
+        };
+
+        // Handle the filter removal
+        scope.remove = function () {
+          scope.onFilterRemove({ id: scope.filter.id });
+        };
+
+        scope.$on('$destroy', function () {
+          element.off('keydown');
+        });
+
+      }
+    };
+  }
+
+  angular.module('ngFacetly')
+    .directive('facetlyFilter', FacetlyFilterDirective);
+
+})();
+
+(function () {
+  'use strict';
+
   function FacetlyHierarchy(Utils) {
 
     return {
@@ -417,7 +487,7 @@
 (function () {
   'use strict';
 
-  function FacetlySelect(Utils) {
+  function FacetlySelect() {
 
     return {
       restrict: 'E',
@@ -446,80 +516,8 @@
     };
   }
 
-  FacetlySelect.$inject = ['FacetlyUtils'];
-
   angular.module('ngFacetly')
     .directive('facetlySelect', FacetlySelect);
-
-})();
-
-(function () {
-  'use strict';
-
-  function FacetlyFilterDirective() {
-
-    return {
-      restrict: 'E',
-      replace: true,
-      templateUrl: 'filter/filter.html',
-      scope: {
-        filter: '=',
-        listMaxItems: '=?',
-        onFilterRemove: '&',
-        onDoSearch: '&'
-      },
-      link: function (scope, element, attrs) {
-        var tagName;
-
-        switch (scope.filter.type) {
-          case 'select':
-            tagName = 'input';
-            break;
-          default:
-            tagName = 'input';
-            break;
-        }
-
-        // Watch for keydown events
-        element.on('keydown', function (event) {
-          if (scope.filter.value === 0 || event.which !== 13 /* the enter key*/) {
-            return;
-          }
-
-          event.preventDefault();
-
-          scope.onDoSearch();
-          scope.$apply();
-        });
-
-        // Watch for focus
-        scope.$watch(attrs.shouldFocus, function (value, oldValue) {
-          if (value === true) {
-            element.find(tagName)[0].focus();
-            scope[attrs.shouldFocus] = false;
-          }
-        });
-
-        // Handle the filter update from a select/multiselect
-        scope.updateFilterValue = function (value) {
-          scope.filter.value = value;
-        };
-
-        // Handle the filter removal
-        scope.remove = function () {
-          scope.onFilterRemove({ id: scope.filter.id });
-        };
-
-        scope.$on('$destroy', function () {
-          element.off('keydown');
-        });
-
-      }
-    };
-  }
-
-  angular.module('ngFacetly')
-    .directive('facetlyFilter', FacetlyFilterDirective);
 
 })();
 
@@ -749,7 +747,7 @@
           scope.suggestions = value.slice();
         });
 
-        scope.$watch('value', function (value, oldValue) {
+        scope.$watch('value', function (value) {
           if (!_.isUndefined(value)) {
             scope.suggestions = scope.facets.slice();
             if (_.isArray(value)) {
