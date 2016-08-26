@@ -40,6 +40,7 @@
           var filter = Utils.setFilter(scope.filteredBy, facet);
           if (!_.isUndefined(filter)) {
             scope.addFilter(filter);
+            scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
           }
         });
 
