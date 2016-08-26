@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function FacetlySelect(Utils) {
+  function FacetlySelect() {
 
     return {
       restrict: 'E',
@@ -29,8 +29,6 @@
       }
     };
   }
-
-  FacetlySelect.$inject = ['FacetlyUtils'];
 
   angular.module('ngFacetly')
     .directive('facetlySelect', FacetlySelect);

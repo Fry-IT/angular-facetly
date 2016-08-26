@@ -38,7 +38,7 @@
         });
 
         // Watch for focus
-        scope.$watch(attrs.shouldFocus, function (value, oldValue) {
+        scope.$watch(attrs.shouldFocus, function (value) {
           if (value === true) {
             element.find(tagName)[0].focus();
             scope[attrs.shouldFocus] = false;

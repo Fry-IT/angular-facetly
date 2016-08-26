@@ -182,7 +182,7 @@
           scope.suggestions = value.slice();
         });
 
-        scope.$watch('value', function (value, oldValue) {
+        scope.$watch('value', function (value) {
           if (!_.isUndefined(value)) {
             scope.suggestions = scope.facets.slice();
             if (_.isArray(value)) {

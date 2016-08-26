@@ -130,14 +130,14 @@
           } else {
             return filter.value.title;
           }
-
+          break;
         case 'hierarchy':
           if (filter.multiselect) {
             return _.map(filter.value, function (v) { return v.title; });
           } else {
             return filter.value.title;
           }
-
+          break;
         default:
           return filter.value;
       }
