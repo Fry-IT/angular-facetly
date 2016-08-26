@@ -29,7 +29,7 @@
                     }
                   })
                   .map(function (facet) {
-                    return facet.label;
+                    return { id: facet.id, title: facet.label };
                   })
                   .value();
         };
@@ -81,13 +81,18 @@
           scope.query = '';
 
           // Perform validations
-          scope.filters = Utils.validateValues(scope.filters);
-          var validationPassed = !_.isUndefined(_.find(scope.filters, { isValid: false })) ? false : true;
+
+          var filteredBy, validationPassed;
+
+          filteredBy = Utils.updateModel(scope.filters);
+          scope.filters = Utils.validateValues(scope.filters, filteredBy);
+
+          validationPassed = !_.isUndefined(_.find(scope.filters, { isValid: false })) ? false : true;
 
           scope.errors = Utils.collectValidationErrors(scope.filters);
 
           if (validationPassed && typeof scope.doSearch === 'function') {
-            scope.filteredBy = Utils.updateModel(scope.filters);
+            scope.filteredBy = filteredBy;
             scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
             $timeout(function () {
               scope.doSearch();
@@ -97,7 +102,7 @@
         };
 
         scope.addTypeaheadSuggestion = function (suggestion) {
-          var idx = Utils.findFilterByKey(scope.facets, 'label', suggestion);
+          var idx = Utils.findFilterByKey(scope.facets, 'id', suggestion.id);
           if (idx !== -1) {
             scope.filters = Utils.addFilter(scope.filters, scope.facets[idx]);
             scope.focusIndex = scope.filters.indexOf(scope.facets[idx]);
@@ -118,7 +123,7 @@
           if (value !== oldValue) {
             scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
           }
-        });
+        }, true);
 
       }
     };

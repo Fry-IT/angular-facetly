@@ -14,7 +14,32 @@
                       return _.keys(filteredBy).indexOf(facet.id) !== -1;
                     })
                     .map(function (facet) {
-                      return _.assign({}, facet, { value: filteredBy[facet.id] });
+                      if (facet.type === 'select' || facet.type === 'hierarchy') {
+                        if (facet.multiselect) {
+                          return _.assign(
+                            {},
+                            facet,
+                            {
+                              value: _.map(filteredBy[facet.id], function (f) {
+                                return { id: f, title: _.find(facet.options, { id: f }).title };
+                              })
+                            }
+                          );
+                        } else {
+                          return _.assign(
+                            {},
+                            facet,
+                            {
+                              value: {
+                                id: filteredBy[facet.id],
+                                title: _.find(facet.options, { id: filteredBy[facet.id] }).title
+                              }
+                            }
+                          );
+                        }
+                      } else {
+                        return _.assign({}, facet, { value: filteredBy[facet.id] });
+                      }
                     })
                     .value();
       }
@@ -59,12 +84,26 @@
       return [];
     };
 
+    service.getValues = function (value, type) {
+      if (type === 'select' || type === 'hierarchy') {
+        if (_.isArray(value)) {
+          value = _.map(value, function (v) {
+            return v.id;
+          });
+        } else if (_.isObject(value)) {
+          value = value.id;
+        }
+      }
+
+      return value;
+    };
+
     service.updateModel = function (filters) {
       var filteredBy = {};
 
       for (var i = 0; i < filters.length; i++) {
         if (!_.isUndefined(filters[i].value)) {
-          filteredBy[filters[i].id] = filters[i].value;
+          filteredBy[filters[i].id] = service.getValues(filters[i].value, filters[i].type);
         }
       }
 
@@ -84,31 +123,19 @@
     };
 
     service.getValueForFilterByType = function (filter) {
-      var extractTitles = function (options, values) {
-        return _.chain(options)
-                .filter(function (item) {
-                  return _.indexOf(values, item.id) !== -1;
-                })
-                .map(function (item) {
-                  return item.title;
-                })
-                .value();
-      };
-
       switch (filter.type) {
         case 'select':
           if (filter.multiselect) {
-            return extractTitles(filter.options, filter.value);
+            return _.map(filter.value, function (v) { return v.title; });
           } else {
-            return _.find(filter.options, { id: filter.value }).title;
+            return filter.value.title;
           }
 
         case 'hierarchy':
-          var flat = this.flatten(filter.options);
           if (filter.multiselect) {
-            return extractTitles(flat, filter.value);
+            return _.map(filter.value, function (v) { return v.title; });
           } else {
-            return _.find(flat, { id: filter.value }).title;
+            return filter.value.title;
           }
 
         default:
@@ -139,7 +166,7 @@
       }
     };
 
-    service.validateValues = function (filters) {
+    service.validateValues = function (filters, filteredBy) {
       return _.map(filters, function (filter) {
         filter = _.assign({}, filter);
 
@@ -149,7 +176,7 @@
 
         if (filter.validation && filter.validationMessages) {
           _.forEach(filter.validation, function (func, key) {
-            if (typeof func === 'function' && !_.isUndefined(filter.validationMessages[key]) && !func(filter.value)) {
+            if (typeof func === 'function' && !_.isUndefined(filter.validationMessages[key]) && !func(filteredBy[filter.id])) {
               filter.isValid = false;
               filter.messages = filter.messages || [];
               filter.messages.push(filter.validationMessages[key]);

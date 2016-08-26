@@ -50,8 +50,8 @@ describe('Facetly Typeahead Directive', function () {
   });
 
   it('should update the selected index', function () {
-    isolatedScope.updateSelectedIndex(1);
-    expect(isolatedScope.selectedIndex).toEqual(1);
+    isolatedScope.updateSelectedIndex(facets[0]);
+    expect(isolatedScope.selectedIndex).toEqual(0);
   });
 
   it('should add a suggestion without multiselect', function () {

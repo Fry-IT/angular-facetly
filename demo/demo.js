@@ -4,15 +4,18 @@
   function MainController($timeout, $q) {
     var vm = this;
 
-    // $timeout(function () {
-    //   vm.model = { keywords: 'test keyword overwritten' };
-    // }, 3000);
+    vm.model = {};
+
+    $timeout(function () {
+      // vm.model = { keywords: 'test keyword overwritten' };
+      // vm.model.eventType = ['04909235489', '46876342346'];
+    }, 2000);
 
     // vm.model = {
     //   keywords: 'test keyword initial'
     // };
 
-    vm.model = {};
+    // vm.model = {};
     vm.appliedFilters = {};
 
     vm.options = {
@@ -93,11 +96,11 @@
             title: 'ARCP'
           },
           {
-            id: '46876342346',
+            id: '46876342346123412',
             title: 'Reflection'
           },
           {
-            id: '46876342346',
+            id: '468763423462134123',
             title: 'MINI-CEX'
           }
         ]
@@ -116,29 +119,29 @@
         type: 'hierarchy',
         options: [
           {
-            id: '124158723975',
+            id: '124158723975514',
             title: 'Curriculum items',
             categories: [
               {
-                id: '95436-1765',
+                id: '95436-1765596',
                 title: 'Item one'
               },
               {
-                id: '3456982348675546',
+                id: '3456982348675546123',
                 title: 'Item two'
               }
             ]
           },
           {
-            id: '7857676576',
+            id: '7857676576123',
             title: 'Domains of competence',
             categories: [
               {
-                id: '9543sadf6-1765',
+                id: '9543sadf6-1765123123',
                 title: 'Item one'
               },
               {
-                id: '43565463778',
+                id: '43565463778123213132',
                 title: 'DoC - Item two'
               }
             ]

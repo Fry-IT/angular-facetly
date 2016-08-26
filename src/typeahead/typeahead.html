@@ -1,7 +1,7 @@
 <div class="facetly-typeahead">
   <div class="facetly-typeahead-selected" ng-show="showSelected">
     <span ng-repeat="value in selected">
-      <a class="facetly-icon facetly-text-danger" href="" tabindex="-1" ng-click="removeSelected(value)">&times;</a> {{value}}
+      <a class="facetly-icon facetly-text-danger" href="" tabindex="-1" ng-click="removeSelected(value)">&times;</a> {{value.title}}
     </span>
   </div>
 
@@ -15,12 +15,13 @@
 
   <div class="facetly-typeahead-suggestions" ng-if="showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))">
     <ul>
-      <li class="facetly-suggestion" ng-class="{'last': $last}" ng-repeat="suggestion in suggestions track by $index"
-        ng-class="{'selected': suggestions.indexOf(suggestion) === selectedIndex}"
-        ng-mouseenter="updateSelectedIndex(suggestions.indexOf(suggestion))">
+      <li class="facetly-suggestion"
+        ng-class="{'last': $last, 'selected': $index === selectedIndex}"
+        ng-repeat="suggestion in suggestions track by $index"
+        ng-mouseenter="updateSelectedIndex(suggestion)">
           <a href="" ng-click="addSuggested(suggestion)">
-            <span ng-if="allowMultiselect && selected.indexOf(suggestion) !== -1">&#10004;</span>
-            <span ng-bind-html="suggestion | facetlyHighlight:query"></span>
+            <span ng-if="allowMultiselect && isSelected(suggestion)">&#10004;</span>
+            <span ng-bind-html="suggestion.title | facetlyHighlight:query"></span>
           </a>
       </li>
       <li class="last" ng-show="query.length && !suggestions.length && !hideNotFound">

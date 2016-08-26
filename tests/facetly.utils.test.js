@@ -151,6 +151,7 @@ describe('Facetly Utils', function () {
     var newFilters = [
       {
         id: 'filterOne',
+        type: 'text',
         label: 'Filter one',
         value: 'Value one',
         validation: {
@@ -165,7 +166,9 @@ describe('Facetly Utils', function () {
     ];
     deepFreeze(newFilters);
 
-    var filtersAfter = Utils.validateValues(newFilters);
+    var filteredBy = Utils.updateModel(newFilters);
+    var filtersAfter = Utils.validateValues(newFilters, filteredBy);
+
     var invalidFilters = _.map(newFilters, function (filter, index) {
       return index === 0 ? _.assign({}, filter, { isValid: false, messages: ['Not valid'] }) : filter;
     });
@@ -177,6 +180,7 @@ describe('Facetly Utils', function () {
     var newFilters = [
       {
         id: 'filterOne',
+        type: 'text',
         label: 'Filter one',
         value: 'Value one',
         validation: {
@@ -191,10 +195,11 @@ describe('Facetly Utils', function () {
     ];
     deepFreeze(newFilters);
 
-    var filtersAfter = Utils.validateValues(newFilters);
-    var invalidFilters = newFilters.slice();
+    var filteredBy = Utils.updateModel(newFilters);
+    var filtersAfter = Utils.validateValues(newFilters, filteredBy);
+    var validFilters = newFilters.slice();
 
-    expect(filtersAfter).toEqual(invalidFilters);
+    expect(filtersAfter).toEqual(validFilters);
   });
 
   it('should collect validation errors', function () {
@@ -227,17 +232,61 @@ describe('Facetly Utils', function () {
   });
 
   it('should get the title value from a select filter', function () {
-    var filter = { id: 'filterOne', label: 'Filter one', value: '123', type: 'select', options: [{ id: '123', title: 'Test' }] };
+    var filter = { id: 'filterOne', label: 'Filter one', value: { id: '123', title: 'Test' }, type: 'select', options: [{ id: '123', title: 'Test' }] };
     expect(Utils.getValueForFilterByType(filter)).toEqual('Test');
   });
 
   it('should get the title value from a hierarchy filter', function () {
-    var filter = { id: 'filterOne', label: 'Filter one', value: '456', type: 'hierarchy', options: [{ id: '123', title: 'Test', categories: [{ id: '456', title: 'Category' }] }] };
+    var filter = {
+      id: 'filterOne',
+      label: 'Filter one',
+      value: {
+        id: '456',
+        title: 'Category'
+      },
+      type: 'hierarchy',
+      options: [
+        {
+          id: '123',
+          title: 'Test',
+          categories: [
+            { id: '456',
+              title: 'Category'
+            }
+          ]
+        }
+      ]
+    };
     expect(Utils.getValueForFilterByType(filter)).toEqual('Category');
   });
 
   it('should get the title value from a multiselect filter', function () {
-    var filter = { id: 'filterOne', label: 'Filter one', value: ['123', '456'], type: 'select', options: [{ id: '123', title: 'Test' }, { id: '456', title: 'Test 2' }], multiselect: true };
+    var filter = {
+      id: 'filterOne',
+      label: 'Filter one',
+      value: [
+        {
+          id: '123',
+          title: 'Test'
+        },
+        {
+          id: '456',
+          title: 'Test 2'
+        }
+      ],
+      type: 'select',
+      options: [
+        {
+          id: '123',
+          title: 'Test'
+        },
+        {
+          id: '456',
+          title: 'Test 2'
+        }
+      ],
+      multiselect: true
+    };
     expect(Utils.getValueForFilterByType(filter)).toEqual(['Test', 'Test 2']);
   });
 

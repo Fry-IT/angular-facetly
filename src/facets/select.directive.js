@@ -8,6 +8,7 @@
       replace: true,
       templateUrl: 'facets/select.html',
       scope: {
+        value: '=?',
         options: '=',
         allowMultiselect: '=?',
         listMaxItems: '=?',
@@ -22,8 +23,7 @@
         });
 
         scope.addTypeaheadSuggestion = function (suggestion) {
-          scope.query = _.isArray(suggestion) ? '' : suggestion;
-          scope.onSelectChange({ value: Utils.getFacetIds(suggestion, scope.options) });
+          scope.onSelectChange({ value: suggestion });
         };
 
       }

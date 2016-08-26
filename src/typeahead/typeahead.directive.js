@@ -9,6 +9,7 @@
       templateUrl: 'typeahead/typeahead.html',
       scope: {
         query: '=',
+        value: '=?',
         facets: '=',
         placeholder: '@?',
         allowMultiselect: '=?',
@@ -25,15 +26,17 @@
           if (!scope.allowMultiselect) {
             scope.showSuggestions = false;
           }
+
+          scope.query = _.isArray(value) ? '' : value.title;
         };
 
         var addSuggestionToSelect = function (suggestion) {
           //check or uncheck
-          var idx = scope.selected.indexOf(suggestion);
-          if (idx === -1) {
+          var item = _.find(scope.selected, { id: suggestion.id });
+          if (_.isUndefined(item)) {
             scope.selected = scope.selected.concat([suggestion]);
           } else {
-            scope.selected.splice(idx, 1);
+            scope.selected = _.without(scope.selected, suggestion);
           }
         };
 
@@ -43,7 +46,7 @@
                     if (value.length === 0) {
                       return true;
                     } else {
-                      return facet.toLowerCase().indexOf(value.toLowerCase()) !== -1;
+                      return facet.title.toLowerCase().indexOf(value.toLowerCase()) !== -1;
                     }
                   })
                   .value();
@@ -83,13 +86,17 @@
           }
         };
 
-        scope.updateSelectedIndex = function (index) {
-          scope.selectedIndex = index;
+        scope.updateSelectedIndex = function (suggestion) {
+          scope.selectedIndex = _.findIndex(scope.suggestions, { id: suggestion.id });
         };
 
         scope.removeSelected = function (value) {
-          var idx = scope.selected.indexOf(value);
-          scope.selected.splice(idx, 1);
+          scope.selected = _.without(scope.selected, value);
+          handleSuggestionSelect(scope.selected);
+        };
+
+        scope.isSelected = function (suggestion) {
+          return _.findIndex(scope.selected, { id: suggestion.id }) !== -1;
         };
 
         // Watch for keydown events
@@ -174,6 +181,22 @@
         scope.$watch('facets', function (value) {
           scope.suggestions = value.slice();
         });
+
+        scope.$watch('value', function (value, oldValue) {
+          if (!_.isUndefined(value)) {
+            scope.suggestions = scope.facets.slice();
+            if (_.isArray(value)) {
+              scope.selected = [];
+              _.forEach(value, function (v) {
+                addSuggestionToSelect(v);
+                handleSuggestionSelect(scope.selected);
+                scope.showSelected = true;
+              });
+            } else {
+              handleSuggestionSelect(scope.value);
+            }
+          }
+        }, true);
 
         // Hide the typeahead when clicking outside of the input
         $document.on('click', function (evt) {
