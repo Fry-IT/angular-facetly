@@ -13,33 +13,11 @@
                     .filter(function (facet) {
                       return _.keys(filteredBy).indexOf(facet.id) !== -1;
                     })
+                    .filter(function (facet) {
+                      return facet.isLoading === false;
+                    })
                     .map(function (facet) {
-                      if (facet.type === 'select' || facet.type === 'hierarchy') {
-                        if (facet.multiselect) {
-                          return _.assign(
-                            {},
-                            facet,
-                            {
-                              value: _.map(filteredBy[facet.id], function (f) {
-                                return { id: f, title: _.find(facet.options, { id: f }).title };
-                              })
-                            }
-                          );
-                        } else {
-                          return _.assign(
-                            {},
-                            facet,
-                            {
-                              value: {
-                                id: filteredBy[facet.id],
-                                title: _.find(facet.options, { id: filteredBy[facet.id] }).title
-                              }
-                            }
-                          );
-                        }
-                      } else {
-                        return _.assign({}, facet, { value: filteredBy[facet.id] });
-                      }
+                      return service.setFilter(filteredBy, facet);
                     })
                     .value();
       }
@@ -47,14 +25,45 @@
       return filters;
     };
 
-    service.setFacets = function (facets) {
+    service.setFilter = function (filteredBy, facet) {
+      if (facet.type === 'select' || facet.type === 'hierarchy') {
+        if (facet.multiselect) {
+          return _.assign(
+            {},
+            facet,
+            {
+              value: _.map(filteredBy[facet.id], function (f) {
+                return { id: f, title: _.find(facet.options, { id: f }).title };
+              })
+            }
+          );
+        } else {
+          return _.assign(
+            {},
+            facet,
+            {
+              value: {
+                id: filteredBy[facet.id],
+                title: _.find(facet.options, { id: filteredBy[facet.id] }).title
+              }
+            }
+          );
+        }
+      } else {
+        return _.assign({}, facet, { value: filteredBy[facet.id] });
+      }
+    };
+
+    service.setFacets = function (facets, facetLoadedCallback) {
       return _.map(facets, function (facet) {
-        facet = _.assign({}, facet);
         facet.isLoading = true;
         $q.when(typeof facet.options === 'function' ? facet.options() : facet.options)
           .then(function (results) {
             facet.options = results;
             facet.isLoading = false;
+            if (_.isFunction(facetLoadedCallback)) {
+              facetLoadedCallback(facet);
+            }
           });
 
         return facet;

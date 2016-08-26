@@ -5,6 +5,7 @@
     var vm = this;
 
     vm.model = {};
+    vm.model.eventState = ['123123189002'];
 
     $timeout(function () {
       // vm.model = { keywords: 'test keyword overwritten' };

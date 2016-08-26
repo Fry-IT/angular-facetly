@@ -36,7 +36,9 @@
 
         scope.options = _.assign({}, DEFAULT_OPTIONS, scope.options);
 
-        scope.facets = Utils.setFacets(scope.unformattedFacets);
+        scope.facets = Utils.setFacets(scope.unformattedFacets, function(facet) {
+          Utils.setFilter(scope.filteredBy, facet);
+        });
 
         scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
 
