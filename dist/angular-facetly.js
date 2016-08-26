@@ -56,11 +56,16 @@
 
         scope.options = _.assign({}, DEFAULT_OPTIONS, scope.options);
 
-        scope.facets = Utils.setFacets(scope.unformattedFacets, function() {
-          scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
+        scope.facets = Utils.setFacets(scope.unformattedFacets, function(facet) {
+          var filter = Utils.setFilter(scope.filteredBy, facet);
+          if (!_.isUndefined(filter)) {
+            scope.addFilter(filter);
+          }
         });
 
-        scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
+        // This is not needed as each facet will setup itself
+        // scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
+        scope.filters = [];
 
         scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.unformattedFacets, scope.filters);
 
@@ -177,37 +182,45 @@
                       return facet.isLoading === false;
                     })
                     .map(function (facet) {
-                      if (facet.type === 'select' || facet.type === 'hierarchy') {
-                        if (facet.multiselect) {
-                          return _.assign(
-                            {},
-                            facet,
-                            {
-                              value: _.map(filteredBy[facet.id], function (f) {
-                                return { id: f, title: _.find(facet.options, { id: f }).title };
-                              })
-                            }
-                          );
-                        } else {
-                          return _.assign(
-                            {},
-                            facet,
-                            {
-                              value: {
-                                id: filteredBy[facet.id],
-                                title: _.find(facet.options, { id: filteredBy[facet.id] }).title
-                              }
-                            }
-                          );
-                        }
-                      } else {
-                        return _.assign({}, facet, { value: filteredBy[facet.id] });
-                      }
+                      return service.setFilter(filteredBy, facet);
                     })
                     .value();
       }
 
       return filters;
+    };
+
+    service.setFilter = function (filteredBy, facet) {
+      if (!_.has(filteredBy, facet.id)) {
+        return;
+      }
+
+      if (facet.type === 'select' || facet.type === 'hierarchy') {
+        if (facet.multiselect) {
+          return _.assign(
+            {},
+            facet,
+            {
+              value: _.map(filteredBy[facet.id], function (f) {
+                return { id: f, title: _.find(facet.options, { id: f }).title };
+              })
+            }
+          );
+        } else {
+          return _.assign(
+            {},
+            facet,
+            {
+              value: {
+                id: filteredBy[facet.id],
+                title: _.find(facet.options, { id: filteredBy[facet.id] }).title
+              }
+            }
+          );
+        }
+      } else {
+        return _.assign({}, facet, { value: filteredBy[facet.id] });
+      }
     };
 
     service.setFacets = function (facets, facetLoadedCallback) {
@@ -218,7 +231,7 @@
             facet.options = results;
             facet.isLoading = false;
             if (_.isFunction(facetLoadedCallback)) {
-              facetLoadedCallback();
+              facetLoadedCallback(facet);
             }
           });
 
@@ -590,7 +603,6 @@
         onSelect: '&'
       },
       link: function (scope, element) {
-        console.log(scope.facets);
         // move this to a constants file
         var HOT_KEYS = [13, 38, 40, 32, 27, 9]; // arrows up(38) / down(40), enter(13), space(32), tab(9)
 

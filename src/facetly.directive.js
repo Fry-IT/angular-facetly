@@ -37,10 +37,15 @@
         scope.options = _.assign({}, DEFAULT_OPTIONS, scope.options);
 
         scope.facets = Utils.setFacets(scope.unformattedFacets, function(facet) {
-          Utils.setFilter(scope.filteredBy, facet);
+          var filter = Utils.setFilter(scope.filteredBy, facet);
+          if (!_.isUndefined(filter)) {
+            scope.addFilter(filter);
+          }
         });
 
-        scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
+        // This is not needed as each facet will setup itself
+        // scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
+        scope.filters = [];
 
         scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.unformattedFacets, scope.filters);
 

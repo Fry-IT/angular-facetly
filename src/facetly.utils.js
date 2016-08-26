@@ -26,6 +26,10 @@
     };
 
     service.setFilter = function (filteredBy, facet) {
+      if (!_.has(filteredBy, facet.id)) {
+        return;
+      }
+
       if (facet.type === 'select' || facet.type === 'hierarchy') {
         if (facet.multiselect) {
           return _.assign(
