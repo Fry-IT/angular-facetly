@@ -49,7 +49,7 @@
                     }
                   })
                   .map(function (facet) {
-                    return facet.label;
+                    return { id: facet.id, title: facet.label };
                   })
                   .value();
         };
@@ -101,13 +101,18 @@
           scope.query = '';
 
           // Perform validations
-          scope.filters = Utils.validateValues(scope.filters);
-          var validationPassed = !_.isUndefined(_.find(scope.filters, { isValid: false })) ? false : true;
+
+          var filteredBy, validationPassed;
+
+          filteredBy = Utils.updateModel(scope.filters);
+          scope.filters = Utils.validateValues(scope.filters, filteredBy);
+
+          validationPassed = !_.isUndefined(_.find(scope.filters, { isValid: false })) ? false : true;
 
           scope.errors = Utils.collectValidationErrors(scope.filters);
 
           if (validationPassed && typeof scope.doSearch === 'function') {
-            scope.filteredBy = Utils.updateModel(scope.filters);
+            scope.filteredBy = filteredBy;
             scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
             $timeout(function () {
               scope.doSearch();
@@ -117,7 +122,7 @@
         };
 
         scope.addTypeaheadSuggestion = function (suggestion) {
-          var idx = Utils.findFilterByKey(scope.facets, 'label', suggestion);
+          var idx = Utils.findFilterByKey(scope.facets, 'id', suggestion.id);
           if (idx !== -1) {
             scope.filters = Utils.addFilter(scope.filters, scope.facets[idx]);
             scope.focusIndex = scope.filters.indexOf(scope.facets[idx]);
@@ -138,7 +143,7 @@
           if (value !== oldValue) {
             scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
           }
-        });
+        }, true);
 
       }
     };
@@ -167,7 +172,32 @@
                       return _.keys(filteredBy).indexOf(facet.id) !== -1;
                     })
                     .map(function (facet) {
-                      return _.assign({}, facet, { value: filteredBy[facet.id] });
+                      if (facet.type === 'select' || facet.type === 'hierarchy') {
+                        if (facet.multiselect) {
+                          return _.assign(
+                            {},
+                            facet,
+                            {
+                              value: _.map(filteredBy[facet.id], function (f) {
+                                return { id: f, title: _.find(facet.options, { id: f }).title };
+                              })
+                            }
+                          );
+                        } else {
+                          return _.assign(
+                            {},
+                            facet,
+                            {
+                              value: {
+                                id: filteredBy[facet.id],
+                                title: _.find(facet.options, { id: filteredBy[facet.id] }).title
+                              }
+                            }
+                          );
+                        }
+                      } else {
+                        return _.assign({}, facet, { value: filteredBy[facet.id] });
+                      }
                     })
                     .value();
       }
@@ -212,12 +242,26 @@
       return [];
     };
 
+    service.getValues = function (value, type) {
+      if (type === 'select' || type === 'hierarchy') {
+        if (_.isArray(value)) {
+          value = _.map(value, function (v) {
+            return v.id;
+          });
+        } else if (_.isObject(value)) {
+          value = value.id;
+        }
+      }
+
+      return value;
+    };
+
     service.updateModel = function (filters) {
       var filteredBy = {};
 
       for (var i = 0; i < filters.length; i++) {
         if (!_.isUndefined(filters[i].value)) {
-          filteredBy[filters[i].id] = filters[i].value;
+          filteredBy[filters[i].id] = service.getValues(filters[i].value, filters[i].type);
         }
       }
 
@@ -237,31 +281,19 @@
     };
 
     service.getValueForFilterByType = function (filter) {
-      var extractTitles = function (options, values) {
-        return _.chain(options)
-                .filter(function (item) {
-                  return _.indexOf(values, item.id) !== -1;
-                })
-                .map(function (item) {
-                  return item.title;
-                })
-                .value();
-      };
-
       switch (filter.type) {
         case 'select':
           if (filter.multiselect) {
-            return extractTitles(filter.options, filter.value);
+            return _.map(filter.value, function (v) { return v.title; });
           } else {
-            return _.find(filter.options, { id: filter.value }).title;
+            return filter.value.title;
           }
 
         case 'hierarchy':
-          var flat = this.flatten(filter.options);
           if (filter.multiselect) {
-            return extractTitles(flat, filter.value);
+            return _.map(filter.value, function (v) { return v.title; });
           } else {
-            return _.find(flat, { id: filter.value }).title;
+            return filter.value.title;
           }
 
         default:
@@ -292,7 +324,7 @@
       }
     };
 
-    service.validateValues = function (filters) {
+    service.validateValues = function (filters, filteredBy) {
       return _.map(filters, function (filter) {
         filter = _.assign({}, filter);
 
@@ -302,7 +334,7 @@
 
         if (filter.validation && filter.validationMessages) {
           _.forEach(filter.validation, function (func, key) {
-            if (typeof func === 'function' && !_.isUndefined(filter.validationMessages[key]) && !func(filter.value)) {
+            if (typeof func === 'function' && !_.isUndefined(filter.validationMessages[key]) && !func(filteredBy[filter.id])) {
               filter.isValid = false;
               filter.messages = filter.messages || [];
               filter.messages.push(filter.validationMessages[key]);
@@ -392,6 +424,7 @@
       replace: true,
       templateUrl: 'facets/select.html',
       scope: {
+        value: '=?',
         options: '=',
         allowMultiselect: '=?',
         listMaxItems: '=?',
@@ -406,8 +439,7 @@
         });
 
         scope.addTypeaheadSuggestion = function (suggestion) {
-          scope.query = _.isArray(suggestion) ? '' : suggestion;
-          scope.onSelectChange({ value: Utils.getFacetIds(suggestion, scope.options) });
+          scope.onSelectChange({ value: suggestion });
         };
 
       }
@@ -544,6 +576,7 @@
       templateUrl: 'typeahead/typeahead.html',
       scope: {
         query: '=',
+        value: '=?',
         facets: '=',
         placeholder: '@?',
         allowMultiselect: '=?',
@@ -560,15 +593,17 @@
           if (!scope.allowMultiselect) {
             scope.showSuggestions = false;
           }
+
+          scope.query = _.isArray(value) ? '' : value.title;
         };
 
         var addSuggestionToSelect = function (suggestion) {
           //check or uncheck
-          var idx = scope.selected.indexOf(suggestion);
-          if (idx === -1) {
+          var item = _.find(scope.selected, { id: suggestion.id });
+          if (_.isUndefined(item)) {
             scope.selected = scope.selected.concat([suggestion]);
           } else {
-            scope.selected.splice(idx, 1);
+            scope.selected = _.without(scope.selected, suggestion);
           }
         };
 
@@ -578,7 +613,7 @@
                     if (value.length === 0) {
                       return true;
                     } else {
-                      return facet.toLowerCase().indexOf(value.toLowerCase()) !== -1;
+                      return facet.title.toLowerCase().indexOf(value.toLowerCase()) !== -1;
                     }
                   })
                   .value();
@@ -618,13 +653,17 @@
           }
         };
 
-        scope.updateSelectedIndex = function (index) {
-          scope.selectedIndex = index;
+        scope.updateSelectedIndex = function (suggestion) {
+          scope.selectedIndex = _.findIndex(scope.suggestions, { id: suggestion.id });
         };
 
         scope.removeSelected = function (value) {
-          var idx = scope.selected.indexOf(value);
-          scope.selected.splice(idx, 1);
+          scope.selected = _.without(scope.selected, value);
+          handleSuggestionSelect(scope.selected);
+        };
+
+        scope.isSelected = function (suggestion) {
+          return _.findIndex(scope.selected, { id: suggestion.id }) !== -1;
         };
 
         // Watch for keydown events
@@ -710,6 +749,22 @@
           scope.suggestions = value.slice();
         });
 
+        scope.$watch('value', function (value, oldValue) {
+          if (!_.isUndefined(value)) {
+            scope.suggestions = scope.facets.slice();
+            if (_.isArray(value)) {
+              scope.selected = [];
+              _.forEach(value, function (v) {
+                addSuggestionToSelect(v);
+                handleSuggestionSelect(scope.selected);
+                scope.showSelected = true;
+              });
+            } else {
+              handleSuggestionSelect(scope.value);
+            }
+          }
+        }, true);
+
         // Hide the typeahead when clicking outside of the input
         $document.on('click', function (evt) {
           if (evt.which !== 3 && element.find('input')[0] !== evt.target) {
@@ -736,6 +791,6 @@
 
 angular.module("ngFacetly").run(["$templateCache", function($templateCache) {$templateCache.put("angular-facetly.html","<div class=\"facetly\">\n  <div class=\"facetly-search\">\n    <div class=\"facetly-searchbox\">\n      <ul class=\"facetly-filters\">\n        <facetly-filter\n          ng-repeat=\"filter in filters\"\n          filter=\"filter\"\n          list-max-items=\"options.listMaxItems\"\n          on-filter-remove=\"removeFilter(id)\"\n          on-do-search=\"search()\"\n          should-focus=\"filters.indexOf(filter) === focusIndex\" />\n      </ul>\n\n      <facetly-typeahead\n        ng-show=\"filters.length !== facets.length\"\n        query=\"query\"\n        facets=\"typeaheadSuggestions\"\n        hide-not-found=\"options.defaultFacet && !filters.length\"\n        on-select=\"addTypeaheadSuggestion(value)\"\n        placeholder=\"{{options.placeholder}}\" />\n    </div>\n\n    <div class=\"facetly-buttons\">\n      <a href=\"\" class=\"facetly-button facetly-button-success\" ng-click=\"search()\">Search</a>\n      <a class=\"facetly-button facetly-button-danger\" href=\"\" ng-if=\"filters.length\" ng-click=\"removeAllFilters()\">Remove all</a>\n    </div>\n  </div>\n\n  <p class=\"facetly-hint-text facetly-text-gray\">Hint: You can use advanced search keywords to more easily find what you’re looking for. <a href=\"\" ng-click=\"showFacets=!showFacets\">What keywords can I use?</a></p>\n\n  <p class=\"facetly-hint-text facetly-text-danger\" ng-show=\"errors.length\">\n    Please correct the following errors before continuing:\n    <ul>\n      <li ng-repeat=\"error in errors\" ng-bind=\"error\"></li>\n    </ul>\n  </p>\n\n  <ul class=\"facetly-facets\" ng-show=\"showFacets\">\n    <li ng-repeat=\"facet in facets | filter:availableFacets\">\n      <a class=\"facetly-facet\" href=\"\" title=\"\" ng-click=\"addFilter(facet)\" ng-bind=\"facet.label\"></a>\n    </li>\n  </ul>\n</div>\n");
 $templateCache.put("facets/hierarchy.html","<div class=\"facetly-hierarchy\">\n\n  <facetly-typeahead\n    allow-multiselect=\"allowMultiselect\"\n    query=\"query\"\n    facets=\"typeaheadSuggestions\"\n    on-select=\"addTypeaheadSuggestion(value)\"\n    list-max-items=\"listMaxItems\"\n    placeholder=\"Start typing to filter...\" />\n\n</div>\n");
-$templateCache.put("facets/select.html","<div class=\"facetly-select\">\n\n  <facetly-typeahead\n    allow-multiselect=\"allowMultiselect\"\n    query=\"query\"\n    facets=\"typeaheadSuggestions\"\n    on-select=\"addTypeaheadSuggestion(value)\"\n    list-max-items=\"listMaxItems\"\n    placeholder=\"Start typing to filter...\" />\n\n</div>\n");
-$templateCache.put("filter/filter.html","<li ng-class=\"{\'facetly-validation-error\': filter.isValid === false}\">\n  <span class=\"facetly-facet\">\n    <a class=\"facetly-icon facetly-text-danger\" href=\"\" tabindex=\"-1\" ng-click=\"remove()\"> &times; </a>\n    {{::filter.label}}:\n  </span>\n  <span class=\"facetly-value\" ng-switch=\"filter.type\">\n    <facetly-select ng-switch-when=\"select\" options=\"filter.options\" allow-multiselect=\"filter.multiselect\" on-select-change=\"updateFilterValue(value)\" list-max-items=\"listMaxItems\" />\n    <facetly-hierarchy ng-switch-when=\"hierarchy\" options=\"filter.options\" allow-multiselect=\"filter.multiselect\" on-select-change=\"updateFilterValue(value)\" list-max-items=\"listMaxItems\" />\n    <input ng-switch-default type=\"text\" class=\"facetly-form-control\" ng-model=\"filter.value\" />\n  </span>\n</li>\n");
-$templateCache.put("typeahead/typeahead.html","<div class=\"facetly-typeahead\">\n  <div class=\"facetly-typeahead-selected\" ng-show=\"showSelected\">\n    <span ng-repeat=\"value in selected\">\n      <a class=\"facetly-icon facetly-text-danger\" href=\"\" tabindex=\"-1\" ng-click=\"removeSelected(value)\">&times;</a> {{value}}\n    </span>\n  </div>\n\n  <input\n    class=\"facetly-form-control\"\n    type=\"text\"\n    ng-model=\"query\"\n    ng-focus=\"showSuggestions=true\"\n    ng-click=\"showSuggestions=true\"\n    placeholder=\"{{placeholder}}\">\n\n  <div class=\"facetly-typeahead-suggestions\" ng-if=\"showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))\">\n    <ul>\n      <li class=\"facetly-suggestion\" ng-class=\"{\'last\': $last}\" ng-repeat=\"suggestion in suggestions track by $index\"\n        ng-class=\"{\'selected\': suggestions.indexOf(suggestion) === selectedIndex}\"\n        ng-mouseenter=\"updateSelectedIndex(suggestions.indexOf(suggestion))\">\n          <a href=\"\" ng-click=\"addSuggested(suggestion)\">\n            <span ng-if=\"allowMultiselect && selected.indexOf(suggestion) !== -1\">&#10004;</span>\n            <span ng-bind-html=\"suggestion | facetlyHighlight:query\"></span>\n          </a>\n      </li>\n      <li class=\"last\" ng-show=\"query.length && !suggestions.length && !hideNotFound\">\n        <span>No match found...</span>\n      </li>\n    </ul>\n  </div>\n</div>\n");}]);
+$templateCache.put("facets/select.html","<div class=\"facetly-select\">\n\n  <facetly-typeahead\n    allow-multiselect=\"allowMultiselect\"\n    query=\"query\"\n    value=\"value\"\n    facets=\"options\"\n    on-select=\"addTypeaheadSuggestion(value)\"\n    list-max-items=\"listMaxItems\"\n    placeholder=\"Start typing to filter...\" />\n\n</div>\n");
+$templateCache.put("filter/filter.html","<li ng-class=\"{\'facetly-validation-error\': filter.isValid === false}\">\n  <span class=\"facetly-facet\">\n    <a class=\"facetly-icon facetly-text-danger\" href=\"\" tabindex=\"-1\" ng-click=\"remove()\"> &times; </a>\n    {{::filter.label}}:\n  </span>\n  <span class=\"facetly-value\" ng-switch=\"filter.type\">\n    <facetly-select ng-switch-when=\"select\" options=\"filter.options\" allow-multiselect=\"filter.multiselect\" on-select-change=\"updateFilterValue(value)\" list-max-items=\"listMaxItems\" value=\"filter.value\" />\n    <facetly-hierarchy ng-switch-when=\"hierarchy\" options=\"filter.options\" allow-multiselect=\"filter.multiselect\" on-select-change=\"updateFilterValue(value)\" list-max-items=\"listMaxItems\" value=\"filter.value\" />\n    <input ng-switch-default type=\"text\" class=\"facetly-form-control\" ng-model=\"filter.value\" />\n  </span>\n</li>\n");
+$templateCache.put("typeahead/typeahead.html","<div class=\"facetly-typeahead\">\n  <div class=\"facetly-typeahead-selected\" ng-show=\"showSelected\">\n    <span ng-repeat=\"value in selected\">\n      <a class=\"facetly-icon facetly-text-danger\" href=\"\" tabindex=\"-1\" ng-click=\"removeSelected(value)\">&times;</a> {{value.title}}\n    </span>\n  </div>\n\n  <input\n    class=\"facetly-form-control\"\n    type=\"text\"\n    ng-model=\"query\"\n    ng-focus=\"showSuggestions=true\"\n    ng-click=\"showSuggestions=true\"\n    placeholder=\"{{placeholder}}\">\n\n  <div class=\"facetly-typeahead-suggestions\" ng-if=\"showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))\">\n    <ul>\n      <li class=\"facetly-suggestion\"\n        ng-class=\"{\'last\': $last, \'selected\': $index === selectedIndex}\"\n        ng-repeat=\"suggestion in suggestions track by $index\"\n        ng-mouseenter=\"updateSelectedIndex(suggestion)\">\n          <a href=\"\" ng-click=\"addSuggested(suggestion)\">\n            <span ng-if=\"allowMultiselect && isSelected(suggestion)\">&#10004;</span>\n            <span ng-bind-html=\"suggestion.title | facetlyHighlight:query\"></span>\n          </a>\n      </li>\n      <li class=\"last\" ng-show=\"query.length && !suggestions.length && !hideNotFound\">\n        <span>No match found...</span>\n      </li>\n    </ul>\n  </div>\n</div>\n");}]);
