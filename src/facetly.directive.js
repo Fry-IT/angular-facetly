@@ -56,16 +56,12 @@
 
         scope.removeFilter = function (key) {
           scope.filters = Utils.removeFilter(scope.filters, key);
+          scope.search();
         };
 
         scope.removeAllFilters = function () {
           scope.filters = Utils.removeAllFilters();
-
-          // FIXME: Duplication
-          if (typeof scope.doSearch === 'function') {
-            scope.filteredBy = Utils.updateModel(scope.filters);
-            scope.doSearch();
-          }
+          scope.search();
         };
 
         scope.availableFacets = function (facet) {
@@ -78,7 +74,7 @@
           if (
             scope.filters.length === 0 && // no filters added
             scope.options.defaultFacet.length && // default Facet is present in options
-            scope.query.length // there is some query entered
+            scope.query && scope.query.length // there is some query entered
           ) {
             var idx = Utils.findFilterByKey(scope.facets, 'id', scope.options.defaultFacet);
             if (idx !== -1) {
@@ -130,6 +126,7 @@
         scope.$watch('filteredBy', function (value, oldValue) {
           if (value !== oldValue) {
             scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
+            scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
           }
         }, true);
 
