@@ -118,6 +118,7 @@
           // lets add the default filter if possible
           if (_.isUndefined(suggestion.id)) {
             scope.addDefaultFilter(suggestion);
+            scope.search();
             return;
           }
 

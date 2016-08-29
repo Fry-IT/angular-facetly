@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function FacetlyFilterDirective() {
+  function FacetlyFilterDirective($timeout) {
 
     return {
       restrict: 'E',
@@ -34,7 +34,6 @@
           event.preventDefault();
 
           scope.onDoSearch();
-          scope.$apply();
         });
 
         // Watch for focus
@@ -48,6 +47,9 @@
         // Handle the filter update from a select/multiselect
         scope.updateFilterValue = function (value) {
           scope.filter.value = value;
+          $timeout(function() {
+            scope.onDoSearch();
+          });
         };
 
         // Handle the filter removal
@@ -62,6 +64,8 @@
       }
     };
   }
+
+  FacetlyFilterDirective.$inject = ['$timeout'];
 
   angular.module('ngFacetly')
     .directive('facetlyFilter', FacetlyFilterDirective);

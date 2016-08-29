@@ -222,7 +222,6 @@
         // before the typeahead is set up
         $timeout(function() {
           $document.on('click', function (evt) {
-            console.log('clicking');
             if (evt.which !== 3 && element.find('input')[0] !== evt.target) {
               scope.showSuggestions = false;
               scope.$apply();
