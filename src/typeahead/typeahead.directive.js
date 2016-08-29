@@ -27,7 +27,11 @@
             scope.showSuggestions = false;
           }
 
-          scope.query = _.isArray(value) ? '' : value.title;
+          if (!_.isUndefined(value)) {
+            scope.query = _.isArray(value) ? '' : value.title;
+          }
+
+          scope.query = '';
         };
 
         var addSuggestionToSelect = function (suggestion) {
@@ -102,6 +106,10 @@
         // Watch for keydown events
         element.on('keydown', function (evt) {
           if (scope.suggestions.length === 0 || HOT_KEYS.indexOf(evt.which) === -1) {
+            if (scope.query && scope.query.length > 0 && evt.which === 13) {
+              handleSuggestionSelect();
+            }
+
             return;
           }
 
@@ -199,12 +207,16 @@
         }, true);
 
         // Hide the typeahead when clicking outside of the input
-        $document.on('click', function (evt) {
-          if (evt.which !== 3 && element.find('input')[0] !== evt.target) {
-            scope.$apply(function () {
+        // this has to be delayed so that it doesn't react to clicks
+        // before the typeahead is set up
+        $timeout(function() {
+          $document.on('click', function (evt) {
+            console.log('clicking');
+            if (evt.which !== 3 && element.find('input')[0] !== evt.target) {
               scope.showSuggestions = false;
-            });
-          }
+              scope.$apply();
+            }
+          });
         });
 
         // Cleanup

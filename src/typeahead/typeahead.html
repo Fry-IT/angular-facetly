@@ -10,7 +10,6 @@
     type="text"
     ng-model="query"
     ng-focus="showSuggestions=true"
-    ng-click="showSuggestions=true"
     placeholder="{{placeholder}}">
 
   <div class="facetly-typeahead-suggestions" ng-if="showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))">

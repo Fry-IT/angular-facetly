@@ -69,6 +69,20 @@
           return facet.isLoading !== true && _.findIndex(filters, { id: facet.id }) === -1;
         };
 
+        scope.addDefaultFilter = function() {
+          if (Utils.findFilterByKey(scope.filters, 'id', scope.options.defaultFacet) !== -1) {
+            return;
+          }
+
+          $timeout(function() {
+            var idx = Utils.findFilterByKey(scope.facets, 'id', scope.options.defaultFacet);
+            if (idx !== -1) {
+              scope.filters.push(_.assign(scope.facets[idx], { value: scope.query }));
+              scope.query = '';
+            }
+          });
+        };
+
         scope.search = function () {
           // Add default filter
           if (
@@ -76,10 +90,7 @@
             scope.options.defaultFacet.length && // default Facet is present in options
             scope.query && scope.query.length // there is some query entered
           ) {
-            var idx = Utils.findFilterByKey(scope.facets, 'id', scope.options.defaultFacet);
-            if (idx !== -1) {
-              scope.filters = [_.assign({}, scope.facets[idx], { value: scope.query })];
-            }
+            scope.addDefaultFilter();
           }
 
           scope.query = '';
@@ -106,6 +117,11 @@
         };
 
         scope.addTypeaheadSuggestion = function (suggestion) {
+          if (_.isUndefined(suggestion)) {
+            scope.addDefaultFilter();
+            return;
+          }
+
           var idx = Utils.findFilterByKey(scope.facets, 'id', suggestion.id);
           if (idx !== -1) {
             scope.filters = Utils.addFilter(scope.filters, scope.facets[idx]);
