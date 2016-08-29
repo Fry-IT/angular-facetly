@@ -13,6 +13,8 @@
         facets: '=',
         placeholder: '@?',
         allowMultiselect: '=?',
+        doNotForceOptions: '@?',
+        resetOnSelect: '@?',
         hideNotFound: '=?',
         listMaxItems: '=?',
         onSelect: '&'
@@ -22,16 +24,24 @@
         var HOT_KEYS = [13, 38, 40, 32, 27, 9]; // arrows up(38) / down(40), enter(13), space(32), tab(9)
 
         var handleSuggestionSelect = function (value) {
-          scope.onSelect({ value: value });
+          // Allow setting the value of a query
+          if (_.isUndefined(value) && scope.doNotForceOptions) {
+            scope.onSelect({ value: {title: scope.query }});
+          } else {
+            scope.onSelect({ value: value });
+          }
+
           if (!scope.allowMultiselect) {
             scope.showSuggestions = false;
           }
 
-          if (!_.isUndefined(value)) {
-            scope.query = _.isArray(value) ? '' : value.title;
+          if (scope.resetOnSelect) {
+            scope.query = '';
+          } else {
+            if (!_.isUndefined(value)) {
+              scope.query = _.isArray(value) ? '' : value.title;
+            }
           }
-
-          scope.query = '';
         };
 
         var addSuggestionToSelect = function (suggestion) {
@@ -108,6 +118,7 @@
           if (scope.suggestions.length === 0 || HOT_KEYS.indexOf(evt.which) === -1) {
             if (scope.query && scope.query.length > 0 && evt.which === 13) {
               handleSuggestionSelect();
+              scope.$apply();
             }
 
             return;
@@ -133,7 +144,7 @@
               break;
             case 32: // space bar
               if (scope.allowMultiselect) {
-                addSuggestionToSelect(scope.suggestions[scope.selectedIndex]);
+                scope.addSuggested(scope.suggestions[scope.selectedIndex]);
               }
 
               break;

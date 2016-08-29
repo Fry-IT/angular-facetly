@@ -69,31 +69,24 @@
           return facet.isLoading !== true && _.findIndex(filters, { id: facet.id }) === -1;
         };
 
-        scope.addDefaultFilter = function() {
+        scope.addDefaultFilter = function(value) {
           if (Utils.findFilterByKey(scope.filters, 'id', scope.options.defaultFacet) !== -1) {
             return;
           }
 
-          $timeout(function() {
-            var idx = Utils.findFilterByKey(scope.facets, 'id', scope.options.defaultFacet);
-            if (idx !== -1) {
-              scope.filters.push(_.assign(scope.facets[idx], { value: scope.query }));
-              scope.query = '';
-            }
-          });
+          var idx = Utils.findFilterByKey(scope.facets, 'id', scope.options.defaultFacet);
+          if (idx !== -1) {
+            scope.filters.push(_.assign(scope.facets[idx], { value: value.title }));
+          }
         };
 
         scope.search = function () {
           // Add default filter
           if (
-            scope.filters.length === 0 && // no filters added
-            scope.options.defaultFacet.length && // default Facet is present in options
             scope.query && scope.query.length // there is some query entered
           ) {
-            scope.addDefaultFilter();
+            scope.addDefaultFilter({title: scope.query});
           }
-
-          scope.query = '';
 
           // Perform validations
 
@@ -118,7 +111,13 @@
 
         scope.addTypeaheadSuggestion = function (suggestion) {
           if (_.isUndefined(suggestion)) {
-            scope.addDefaultFilter();
+            return;
+          }
+
+          // If id is not defined, it is just a query,
+          // lets add the default filter if possible
+          if (_.isUndefined(suggestion.id)) {
+            scope.addDefaultFilter(suggestion);
             return;
           }
 
