@@ -12,7 +12,7 @@
     ng-focus="showSuggestions=true"
     placeholder="{{placeholder}}">
 
-  <div class="facetly-typeahead-suggestions" ng-if="showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))">
+  <div class="facetly-typeahead-suggestions" ng-if="showSuggestions && suggestions.length > 0">
     <ul>
       <li class="facetly-suggestion"
         ng-class="{'last': $last, 'selected': $index === selectedIndex}"

@@ -20,6 +20,8 @@
         onSelect: '&'
       },
       link: function (scope, element) {
+        var listMaxItems = scope.listMaxItems || 50;
+
         // move this to a constants file
         var HOT_KEYS = [13, 38, 40, 32, 27, 9]; // arrows up(38) / down(40), enter(13), space(32), tab(9)
 
@@ -154,7 +156,7 @@
               break;
 
             case 9: //tab
-              if (scope.allowMultiselect) {
+              if (scope.allowMultiselect && scope.selected) {
                 handleSuggestionSelect(scope.selected);
                 updateSelected(scope.selected);
                 scope.showSuggestions = false;
@@ -184,26 +186,29 @@
           if (value !== oldValue || value === '') {
             // try to optimize how many letters to initiate the search after
             if (
-              (scope.suggestions.length > 1000 && value.length > 5) ||
-              (scope.suggestions.length > 500 && value.length > 3) ||
-              (scope.suggestions.length > 100 && value.length > 2) ||
-              (scope.suggestions.length <= 100 && value.length > -1)
+              (scope.facets.length > 1000 && value.length >= 5) ||
+              (scope.facets.length > 500 && scope.facets.length < 1000 && value.length >= 3) ||
+              (scope.facets.length > 100 && scope.facets.length < 500 && value.length >= 2) ||
+              (scope.facets.length <= 100 && value.length > -1)
             ) {
               scope.selectedIndex = -1;
               scope.suggestions = suggest(value, scope.facets);
               updateSelected(value);
+            } else {
+              scope.suggestions = [];
             }
           }
         });
 
         // Watch the facets
         scope.$watch('facets', function (value) {
-          scope.suggestions = value.slice();
+          if (value.length <= listMaxItems) {
+            scope.suggestions = value.slice();
+          }
         });
 
         scope.$watch('value', function (value) {
           if (!_.isUndefined(value)) {
-            scope.suggestions = scope.facets.slice();
             if (_.isArray(value)) {
               scope.selected = [];
               _.forEach(value, function (v) {

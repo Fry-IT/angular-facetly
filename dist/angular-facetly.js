@@ -468,10 +468,6 @@
 
         scope.allowMultiselect = _.isUndefined(scope.allowMultiselect) ? false : scope.allowMultiselect;
 
-        scope.typeaheadSuggestions = _.map(scope.options, function (option) {
-          return option.title;
-        });
-
         scope.addTypeaheadSuggestion = function (suggestion) {
           scope.onSelectChange({ value: suggestion });
         };
@@ -623,6 +619,8 @@
         onSelect: '&'
       },
       link: function (scope, element) {
+        var listMaxItems = scope.listMaxItems || 50;
+
         // move this to a constants file
         var HOT_KEYS = [13, 38, 40, 32, 27, 9]; // arrows up(38) / down(40), enter(13), space(32), tab(9)
 
@@ -757,7 +755,7 @@
               break;
 
             case 9: //tab
-              if (scope.allowMultiselect) {
+              if (scope.allowMultiselect && scope.selected) {
                 handleSuggestionSelect(scope.selected);
                 updateSelected(scope.selected);
                 scope.showSuggestions = false;
@@ -787,26 +785,29 @@
           if (value !== oldValue || value === '') {
             // try to optimize how many letters to initiate the search after
             if (
-              (scope.suggestions.length > 1000 && value.length > 5) ||
-              (scope.suggestions.length > 500 && value.length > 3) ||
-              (scope.suggestions.length > 100 && value.length > 2) ||
-              (scope.suggestions.length <= 100 && value.length > -1)
+              (scope.facets.length > 1000 && value.length >= 5) ||
+              (scope.facets.length > 500 && scope.facets.length < 1000 && value.length >= 3) ||
+              (scope.facets.length > 100 && scope.facets.length < 500 && value.length >= 2) ||
+              (scope.facets.length <= 100 && value.length > -1)
             ) {
               scope.selectedIndex = -1;
               scope.suggestions = suggest(value, scope.facets);
               updateSelected(value);
+            } else {
+              scope.suggestions = [];
             }
           }
         });
 
         // Watch the facets
         scope.$watch('facets', function (value) {
-          scope.suggestions = value.slice();
+          if (value.length <= listMaxItems) {
+            scope.suggestions = value.slice();
+          }
         });
 
         scope.$watch('value', function (value) {
           if (!_.isUndefined(value)) {
-            scope.suggestions = scope.facets.slice();
             if (_.isArray(value)) {
               scope.selected = [];
               _.forEach(value, function (v) {
@@ -851,4 +852,4 @@ angular.module('ngFacetly').run(['$templateCache', function($templateCache) {$te
 $templateCache.put('facets/hierarchy.html','<div class="facetly-hierarchy">\n\n  <facetly-typeahead\n    allow-multiselect="allowMultiselect"\n    query="query"\n    facets="typeaheadSuggestions"\n    on-select="addTypeaheadSuggestion(value)"\n    list-max-items="listMaxItems"\n    placeholder="Start typing to filter..." />\n\n</div>\n');
 $templateCache.put('facets/select.html','<div class="facetly-select">\n\n  <facetly-typeahead\n    allow-multiselect="allowMultiselect"\n    query="query"\n    value="value"\n    facets="options"\n    on-select="addTypeaheadSuggestion(value)"\n    list-max-items="listMaxItems"\n    placeholder="Start typing to filter..." />\n\n</div>\n');
 $templateCache.put('filter/filter.html','<li ng-class="{\'facetly-validation-error\': filter.isValid === false}">\n  <span class="facetly-facet">\n    <a class="facetly-icon facetly-text-danger" href="" tabindex="-1" ng-click="remove()"> &times; </a>\n    {{::filter.label}}:\n  </span>\n  <span class="facetly-value" ng-switch="filter.type">\n    <facetly-select ng-switch-when="select" options="filter.options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" list-max-items="listMaxItems" value="filter.value" />\n    <facetly-hierarchy ng-switch-when="hierarchy" options="filter.options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" list-max-items="listMaxItems" value="filter.value" />\n    <input ng-switch-default type="text" class="facetly-form-control" ng-model="filter.value" />\n  </span>\n</li>\n');
-$templateCache.put('typeahead/typeahead.html','<div class="facetly-typeahead">\n  <div class="facetly-typeahead-selected" ng-show="showSelected">\n    <span ng-repeat="value in selected">\n      <a class="facetly-icon facetly-text-danger" href="" tabindex="-1" ng-click="removeSelected(value)">&times;</a> {{value.title}}\n    </span>\n  </div>\n\n  <input\n    class="facetly-form-control"\n    type="text"\n    ng-model="query"\n    ng-focus="showSuggestions=true"\n    placeholder="{{placeholder}}">\n\n  <div class="facetly-typeahead-suggestions" ng-if="showSuggestions && (!listMaxItems || (listMaxItems && listMaxItems >= suggestions.length))">\n    <ul>\n      <li class="facetly-suggestion"\n        ng-class="{\'last\': $last, \'selected\': $index === selectedIndex}"\n        ng-repeat="suggestion in suggestions track by $index"\n        ng-mouseenter="updateSelectedIndex(suggestion)">\n          <a href="" ng-click="addSuggested(suggestion)">\n            <span ng-if="allowMultiselect && isSelected(suggestion)">&#10004;</span>\n            <span ng-bind-html="suggestion.title | facetlyHighlight:query"></span>\n          </a>\n      </li>\n      <li class="last" ng-show="query.length && !suggestions.length && !hideNotFound">\n        <span>No match found...</span>\n      </li>\n    </ul>\n  </div>\n</div>\n');}]);
+$templateCache.put('typeahead/typeahead.html','<div class="facetly-typeahead">\n  <div class="facetly-typeahead-selected" ng-show="showSelected">\n    <span ng-repeat="value in selected">\n      <a class="facetly-icon facetly-text-danger" href="" tabindex="-1" ng-click="removeSelected(value)">&times;</a> {{value.title}}\n    </span>\n  </div>\n\n  <input\n    class="facetly-form-control"\n    type="text"\n    ng-model="query"\n    ng-focus="showSuggestions=true"\n    placeholder="{{placeholder}}">\n\n  <div class="facetly-typeahead-suggestions" ng-if="showSuggestions && suggestions.length > 0">\n    <ul>\n      <li class="facetly-suggestion"\n        ng-class="{\'last\': $last, \'selected\': $index === selectedIndex}"\n        ng-repeat="suggestion in suggestions track by $index"\n        ng-mouseenter="updateSelectedIndex(suggestion)">\n          <a href="" ng-click="addSuggested(suggestion)">\n            <span ng-if="allowMultiselect && isSelected(suggestion)">&#10004;</span>\n            <span ng-bind-html="suggestion.title | facetlyHighlight:query"></span>\n          </a>\n      </li>\n      <li class="last" ng-show="query.length && !suggestions.length && !hideNotFound">\n        <span>No match found...</span>\n      </li>\n    </ul>\n  </div>\n</div>\n');}]);

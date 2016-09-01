@@ -18,10 +18,6 @@
 
         scope.allowMultiselect = _.isUndefined(scope.allowMultiselect) ? false : scope.allowMultiselect;
 
-        scope.typeaheadSuggestions = _.map(scope.options, function (option) {
-          return option.title;
-        });
-
         scope.addTypeaheadSuggestion = function (suggestion) {
           scope.onSelectChange({ value: suggestion });
         };
