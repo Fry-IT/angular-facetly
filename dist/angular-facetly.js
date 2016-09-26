@@ -494,7 +494,8 @@
         filter: '=',
         listMaxItems: '=?',
         onFilterRemove: '&',
-        onDoSearch: '&'
+        onDoSearch: '&',
+        shouldFocus: '='
       },
       link: function (scope, element, attrs) {
         var tagName;
@@ -520,7 +521,9 @@
         });
 
         // Watch for focus
-        scope.$watch(attrs.shouldFocus, function (value) {
+        scope.$watch(function() {
+          return scope.shouldFocus;
+        }, function (value) {
           if (value === true) {
             element.find(tagName)[0].focus();
             scope[attrs.shouldFocus] = false;
