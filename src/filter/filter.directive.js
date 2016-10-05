@@ -42,7 +42,9 @@
           return scope.shouldFocus;
         }, function (value) {
           if (value === true) {
-            element.find(tagName)[0].focus();
+            $timeout(function() {
+              element.find(tagName)[0].focus();
+            });
             scope[attrs.shouldFocus] = false;
           }
         });

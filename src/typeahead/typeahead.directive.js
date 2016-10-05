@@ -62,7 +62,12 @@
                     if (value.length === 0) {
                       return true;
                     } else {
-                      return facet.title.toLowerCase().indexOf(value.toLowerCase()) !== -1;
+                      try {
+                        return facet.title.toLowerCase().indexOf(value.toLowerCase()) !== -1;
+                      } catch (err) {
+                        console.log(err);
+                        return false;
+                      }
                     }
                   })
                   .value();
@@ -219,6 +224,8 @@
             } else {
               handleSuggestionSelect(scope.value);
             }
+          } else {
+            scope.selected = [];
           }
         }, true);
 

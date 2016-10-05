@@ -21,7 +21,7 @@
                   .filter(function (facet) {
                     if (
                       facet.type === 'text' ||
-                      (facet.type !== 'text' && _.isArray(facet.options))
+                      (facet.type !== 'text' && _.isArray(facet._options))
                     ) {
                       return _.findIndex(filters, { id: facet.id }) === -1;
                     } else {
@@ -124,8 +124,9 @@
 
           var idx = Utils.findFilterByKey(scope.facets, 'id', suggestion.id);
           if (idx !== -1) {
-            scope.filters = Utils.addFilter(scope.filters, scope.facets[idx]);
-            scope.focusIndex = scope.filters.indexOf(scope.facets[idx]);
+            var filter = angular.copy(scope.facets[idx]);
+            scope.filters = Utils.addFilter(scope.filters, filter);
+            scope.focusIndex = scope.filters.indexOf(filter);
             scope.query = '';
             scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
           }
@@ -141,6 +142,8 @@
         // Watch the model
         scope.$watch('filteredBy', function (value, oldValue) {
           if (value !== oldValue) {
+            // Hack - this does not really work.. as as the filteredBy change is triggered from inside too
+            scope.focusIndex = -2;
             scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
             scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
           }

@@ -26,7 +26,7 @@
     };
 
     service.setFilter = function (filteredBy, facet) {
-      if (!_.has(filteredBy, facet.id)) {
+      if (!_.has(filteredBy, facet.id) || filteredBy[facet.id] === undefined) {
         return;
       }
 
@@ -37,18 +37,20 @@
             facet,
             {
               value: _.map(filteredBy[facet.id], function (f) {
-                return { id: f, title: _.find(facet.options, { id: f }).title };
+                var option = _.find(facet._options, { id: f });
+                return { id: f, title: option && option.title || 'n/a' };
               })
             }
           );
         } else {
+          var option = _.find(facet._options, { id: filteredBy[facet.id] });
           return _.assign(
             {},
             facet,
             {
               value: {
                 id: filteredBy[facet.id],
-                title: _.find(facet.options, { id: filteredBy[facet.id] }).title
+                title: option && option.title || 'n/a'
               }
             }
           );
@@ -61,9 +63,10 @@
     service.setFacets = function (facets, facetLoadedCallback) {
       return _.map(facets, function (facet) {
         facet.isLoading = true;
+        facet._options = [];
         $q.when(typeof facet.options === 'function' ? facet.options() : facet.options)
           .then(function (results) {
-            facet.options = results;
+            facet._options = results;
             facet.isLoading = false;
             if (_.isFunction(facetLoadedCallback)) {
               facetLoadedCallback(facet);
@@ -83,13 +86,11 @@
 
     service.addFilter = function (filters, filter) {
       var idx = this.findFilterByKey(filters, 'id', filter.id);
-
       return idx === -1 ? filters.concat([filter]) : filters;
     };
 
     service.removeFilter = function (filters, key) {
       var idx = this.findFilterByKey(filters, 'id', key);
-
       return idx !== -1 ? filters.slice(0, idx).concat(filters.slice(idx + 1)) : filters;
     };
 
@@ -115,7 +116,7 @@
       var filteredBy = {};
 
       for (var i = 0; i < filters.length; i++) {
-        if (!_.isUndefined(filters[i].value)) {
+        if (!_.isEmpty(filters[i].value)) {
           filteredBy[filters[i].id] = service.getValues(filters[i].value, filters[i].type);
         }
       }
