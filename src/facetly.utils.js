@@ -112,12 +112,13 @@
       return value;
     };
 
-    service.updateModel = function (filters) {
-      var filteredBy = {};
-
-      for (var i = 0; i < filters.length; i++) {
-        if (!_.isEmpty(filters[i].value)) {
-          filteredBy[filters[i].id] = service.getValues(filters[i].value, filters[i].type);
+    service.updateModel = function (filters, facets, filteredBy) {
+      for (var i = 0; i < facets.length; i++) {
+        var filter = _.find(filters, {id: facets[i].id});
+        if (!_.isUndefined(filter) && !_.isEmpty(filter.value)) {
+          filteredBy[filter.id] = service.getValues(filter.value, filter.type);
+        } else {
+          delete filteredBy[facets[i].id];
         }
       }
 

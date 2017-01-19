@@ -80,7 +80,7 @@
 
           var idx = Utils.findFilterByKey(scope.facets, 'id', scope.options.defaultFacet);
           if (idx !== -1) {
-            scope.filters.push(_.assign(scope.facets[idx], { value: value.title }));
+            scope.filters.push(_.assign({}, scope.facets[idx], { value: value.title }));
           }
         };
 
@@ -96,7 +96,7 @@
 
           var filteredBy, validationPassed;
 
-          filteredBy = Utils.updateModel(scope.filters);
+          filteredBy = Utils.updateModel(scope.filters, scope.facets, scope.filteredBy);
           scope.filters = Utils.validateValues(scope.filters, filteredBy);
 
           validationPassed = !_.isUndefined(_.find(scope.filters, { isValid: false })) ? false : true;
