@@ -12,7 +12,8 @@
         filteredBy: '=ngModel',
         appliedFilters: '=',
         unformattedFacets: '=facets',
-        doSearch: '&?'
+        doSearch: '&?',
+        doRemoveAll: '&?'
       },
       link: function (scope) {
 
@@ -61,7 +62,10 @@
 
         scope.removeAllFilters = function () {
           scope.filters = Utils.removeAllFilters();
-          scope.search();
+          $timeout(function () {
+            scope.doRemoveAll();
+            scope.search();
+          });
         };
 
         scope.availableFacets = function (facet) {
@@ -141,11 +145,13 @@
 
         // Watch the model
         scope.$watch('filteredBy', function (value, oldValue) {
+          scope.showRemoveAll = !_.isEmpty(value);
           if (value !== oldValue) {
             // Hack - this does not really work.. as as the filteredBy change is triggered from inside too
             scope.focusIndex = -2;
             scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
             scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
+            scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
           }
         }, true);
 
