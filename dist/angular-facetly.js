@@ -32,7 +32,8 @@
         filteredBy: '=ngModel',
         appliedFilters: '=',
         unformattedFacets: '=facets',
-        doSearch: '&?'
+        doSearch: '&?',
+        doRemoveAll: '&?'
       },
       link: function (scope) {
 
@@ -81,7 +82,10 @@
 
         scope.removeAllFilters = function () {
           scope.filters = Utils.removeAllFilters();
-          scope.search();
+          $timeout(function () {
+            scope.doRemoveAll();
+            scope.search();
+          });
         };
 
         scope.availableFacets = function (facet) {
@@ -96,7 +100,7 @@
 
           var idx = Utils.findFilterByKey(scope.facets, 'id', scope.options.defaultFacet);
           if (idx !== -1) {
-            scope.filters.push(_.assign(scope.facets[idx], { value: value.title }));
+            scope.filters.push(_.assign({}, scope.facets[idx], { value: value.title }));
           }
         };
 
@@ -112,7 +116,7 @@
 
           var filteredBy, validationPassed;
 
-          filteredBy = Utils.updateModel(scope.filters);
+          filteredBy = Utils.updateModel(scope.filters, scope.facets, scope.filteredBy);
           scope.filters = Utils.validateValues(scope.filters, filteredBy);
 
           validationPassed = !_.isUndefined(_.find(scope.filters, { isValid: false })) ? false : true;
@@ -161,11 +165,13 @@
 
         // Watch the model
         scope.$watch('filteredBy', function (value, oldValue) {
+          scope.showRemoveAll = !_.isEmpty(value);
           if (value !== oldValue) {
             // Hack - this does not really work.. as as the filteredBy change is triggered from inside too
             scope.focusIndex = -2;
             scope.filters = Utils.setFilters(scope.filteredBy, scope.facets);
             scope.appliedFilters = Utils.updateAppliedFilters(scope.filters);
+            scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
           }
         }, true);
 
@@ -294,12 +300,13 @@
       return value;
     };
 
-    service.updateModel = function (filters) {
-      var filteredBy = {};
-
-      for (var i = 0; i < filters.length; i++) {
-        if (!_.isEmpty(filters[i].value)) {
-          filteredBy[filters[i].id] = service.getValues(filters[i].value, filters[i].type);
+    service.updateModel = function (filters, facets, filteredBy) {
+      for (var i = 0; i < facets.length; i++) {
+        var filter = _.find(filters, {id: facets[i].id});
+        if (!_.isUndefined(filter) && !_.isEmpty(filter.value)) {
+          filteredBy[filter.id] = service.getValues(filter.value, filter.type);
+        } else {
+          delete filteredBy[facets[i].id];
         }
       }
 
@@ -864,7 +871,7 @@
 
 })();
 
-angular.module('ngFacetly').run(['$templateCache', function($templateCache) {$templateCache.put('angular-facetly.html','<div class="facetly">\n  <div class="facetly-search">\n    <div class="facetly-searchbox">\n      <ul class="facetly-filters">\n        <facetly-filter\n          ng-repeat="filter in filters"\n          filter="filter"\n          list-max-items="options.listMaxItems"\n          on-filter-remove="removeFilter(id)"\n          on-do-search="search()"\n          should-focus="filters.indexOf(filter) === focusIndex" />\n      </ul>\n\n      <facetly-typeahead\n        ng-show="filters.length !== facets.length"\n        query="query"\n        facets="typeaheadSuggestions"\n        hide-not-found="options.defaultFacet && !filters.length"\n        reset-on-select="true"\n        do-not-force-options="true"\n        on-select="addTypeaheadSuggestion(value)"\n        placeholder="{{options.placeholder}}" />\n    </div>\n\n    <div class="facetly-buttons">\n      <a href="" class="facetly-button facetly-button-success" ng-click="search()">Search</a>\n      <a class="facetly-button facetly-button-danger" href="" ng-if="filters.length" ng-click="removeAllFilters()">Remove all</a>\n    </div>\n  </div>\n\n  <p class="facetly-hint-text facetly-text-gray">Hint: You can use advanced search keywords to more easily find what you\u2019re looking for. <a href="" ng-click="showFacets=!showFacets">What keywords can I use?</a></p>\n\n  <p class="facetly-hint-text facetly-text-danger" ng-show="errors.length">\n    Please correct the following errors before continuing:\n    <ul>\n      <li ng-repeat="error in errors" ng-bind="error"></li>\n    </ul>\n  </p>\n\n  <ul class="facetly-facets" ng-show="showFacets">\n    <li ng-repeat="facet in facets | filter:availableFacets">\n      <a class="facetly-facet" href="" title="" ng-click="addFilter(facet)" ng-bind="facet.label"></a>\n    </li>\n  </ul>\n</div>\n');
+angular.module('ngFacetly').run(['$templateCache', function($templateCache) {$templateCache.put('angular-facetly.html','<div class="facetly">\n  <div class="facetly-search">\n    <div class="facetly-searchbox">\n      <ul class="facetly-filters">\n        <facetly-filter\n          ng-repeat="filter in filters"\n          filter="filter"\n          list-max-items="options.listMaxItems"\n          on-filter-remove="removeFilter(id)"\n          on-do-search="search()"\n          should-focus="filters.indexOf(filter) === focusIndex" />\n      </ul>\n\n      <facetly-typeahead\n        ng-show="filters.length !== facets.length"\n        query="query"\n        facets="typeaheadSuggestions"\n        hide-not-found="options.defaultFacet && !filters.length"\n        reset-on-select="true"\n        do-not-force-options="true"\n        on-select="addTypeaheadSuggestion(value)"\n        placeholder="{{options.placeholder}}" />\n    </div>\n\n    <div class="facetly-buttons">\n      <a href="" class="facetly-button facetly-button-success" ng-click="search()">Search</a>\n      <a class="facetly-button facetly-button-danger" href="" ng-if="showRemoveAll" ng-click="removeAllFilters()">Remove all</a>\n    </div>\n  </div>\n\n  <p class="facetly-hint-text facetly-text-danger" ng-show="errors.length">\n    Please correct the following errors before continuing:\n    <ul>\n      <li ng-repeat="error in errors" ng-bind="error"></li>\n    </ul>\n  </p>\n\n  <ul class="facetly-facets" ng-show="showFacets">\n    <li ng-repeat="facet in facets | filter:availableFacets">\n      <a class="facetly-facet" href="" title="" ng-click="addFilter(facet)" ng-bind="facet.label"></a>\n    </li>\n  </ul>\n</div>\n');
 $templateCache.put('facets/hierarchy.html','<div class="facetly-hierarchy">\n\n  <facetly-typeahead\n    allow-multiselect="allowMultiselect"\n    query="query"\n    facets="typeaheadSuggestions"\n    on-select="addTypeaheadSuggestion(value)"\n    list-max-items="listMaxItems"\n    placeholder="Start typing to filter..." />\n\n</div>\n');
 $templateCache.put('facets/select.html','<div class="facetly-select">\n\n  <facetly-typeahead\n    allow-multiselect="allowMultiselect"\n    query="query"\n    value="value"\n    facets="options"\n    on-select="addTypeaheadSuggestion(value)"\n    list-max-items="listMaxItems"\n    placeholder="Start typing to filter..." />\n\n</div>\n');
 $templateCache.put('filter/filter.html','<li ng-class="{\'facetly-validation-error\': filter.isValid === false}">\n  <span class="facetly-facet">\n    <a class="facetly-icon facetly-text-danger" href="" tabindex="-1" ng-click="remove()"> &times; </a>\n    {{::filter.label}}:\n  </span>\n  <span class="facetly-value" ng-switch="filter.type">\n    <facetly-select ng-switch-when="select" options="filter._options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" list-max-items="listMaxItems" value="filter.value" />\n    <facetly-hierarchy ng-switch-when="hierarchy" options="filter._options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" list-max-items="listMaxItems" value="filter.value" />\n    <input ng-switch-default type="text" class="facetly-form-control" ng-model="filter.value" />\n  </span>\n</li>\n');
