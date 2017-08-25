@@ -13,33 +13,11 @@
                     .filter(function (facet) {
                       return _.keys(filteredBy).indexOf(facet.id) !== -1;
                     })
+                    .filter(function (facet) {
+                      return facet.isLoading === false;
+                    })
                     .map(function (facet) {
-                      if (facet.type === 'select' || facet.type === 'hierarchy') {
-                        if (facet.multiselect) {
-                          return _.assign(
-                            {},
-                            facet,
-                            {
-                              value: _.map(filteredBy[facet.id], function (f) {
-                                return { id: f, title: _.find(facet.options, { id: f }).title };
-                              })
-                            }
-                          );
-                        } else {
-                          return _.assign(
-                            {},
-                            facet,
-                            {
-                              value: {
-                                id: filteredBy[facet.id],
-                                title: _.find(facet.options, { id: filteredBy[facet.id] }).title
-                              }
-                            }
-                          );
-                        }
-                      } else {
-                        return _.assign({}, facet, { value: filteredBy[facet.id] });
-                      }
+                      return service.setFilter(filteredBy, facet);
                     })
                     .value();
       }
@@ -47,14 +25,52 @@
       return filters;
     };
 
-    service.setFacets = function (facets) {
+    service.setFilter = function (filteredBy, facet) {
+      if (!_.has(filteredBy, facet.id) || filteredBy[facet.id] === undefined) {
+        return;
+      }
+
+      if (facet.type === 'select' || facet.type === 'hierarchy') {
+        if (facet.multiselect) {
+          return _.assign(
+            {},
+            facet,
+            {
+              value: _.map(filteredBy[facet.id], function (f) {
+                var option = _.find(facet._options, { id: f });
+                return { id: f, title: option && option.title || 'n/a' };
+              })
+            }
+          );
+        } else {
+          var option = _.find(facet._options, { id: filteredBy[facet.id] });
+          return _.assign(
+            {},
+            facet,
+            {
+              value: {
+                id: filteredBy[facet.id],
+                title: option && option.title || 'n/a'
+              }
+            }
+          );
+        }
+      } else {
+        return _.assign({}, facet, { value: filteredBy[facet.id] });
+      }
+    };
+
+    service.setFacets = function (facets, facetLoadedCallback) {
       return _.map(facets, function (facet) {
-        facet = _.assign({}, facet);
         facet.isLoading = true;
+        facet._options = [];
         $q.when(typeof facet.options === 'function' ? facet.options() : facet.options)
           .then(function (results) {
-            facet.options = results;
+            facet._options = results;
             facet.isLoading = false;
+            if (_.isFunction(facetLoadedCallback)) {
+              facetLoadedCallback(facet);
+            }
           });
 
         return facet;
@@ -70,13 +86,11 @@
 
     service.addFilter = function (filters, filter) {
       var idx = this.findFilterByKey(filters, 'id', filter.id);
-
       return idx === -1 ? filters.concat([filter]) : filters;
     };
 
     service.removeFilter = function (filters, key) {
       var idx = this.findFilterByKey(filters, 'id', key);
-
       return idx !== -1 ? filters.slice(0, idx).concat(filters.slice(idx + 1)) : filters;
     };
 
@@ -98,12 +112,13 @@
       return value;
     };
 
-    service.updateModel = function (filters) {
-      var filteredBy = {};
-
-      for (var i = 0; i < filters.length; i++) {
-        if (!_.isUndefined(filters[i].value)) {
-          filteredBy[filters[i].id] = service.getValues(filters[i].value, filters[i].type);
+    service.updateModel = function (filters, facets, filteredBy) {
+      for (var i = 0; i < facets.length; i++) {
+        var filter = _.find(filters, {id: facets[i].id});
+        if (!_.isUndefined(filter) && !_.isEmpty(filter.value)) {
+          filteredBy[filter.id] = service.getValues(filter.value, filter.type);
+        } else {
+          delete filteredBy[facets[i].id];
         }
       }
 

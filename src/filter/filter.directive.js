@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  function FacetlyFilterDirective() {
+  function FacetlyFilterDirective($timeout) {
 
     return {
       restrict: 'E',
@@ -11,7 +11,8 @@
         filter: '=',
         listMaxItems: '=?',
         onFilterRemove: '&',
-        onDoSearch: '&'
+        onDoSearch: '&',
+        shouldFocus: '='
       },
       link: function (scope, element, attrs) {
         var tagName;
@@ -34,13 +35,16 @@
           event.preventDefault();
 
           scope.onDoSearch();
-          scope.$apply();
         });
 
         // Watch for focus
-        scope.$watch(attrs.shouldFocus, function (value) {
+        scope.$watch(function() {
+          return scope.shouldFocus;
+        }, function (value) {
           if (value === true) {
-            element.find(tagName)[0].focus();
+            $timeout(function() {
+              element.find(tagName)[0].focus();
+            });
             scope[attrs.shouldFocus] = false;
           }
         });
@@ -48,6 +52,9 @@
         // Handle the filter update from a select/multiselect
         scope.updateFilterValue = function (value) {
           scope.filter.value = value;
+          $timeout(function() {
+            scope.onDoSearch();
+          });
         };
 
         // Handle the filter removal
@@ -62,6 +69,8 @@
       }
     };
   }
+
+  FacetlyFilterDirective.$inject = ['$timeout'];
 
   angular.module('ngFacetly')
     .directive('facetlyFilter', FacetlyFilterDirective);

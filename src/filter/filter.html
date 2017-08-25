@@ -4,8 +4,8 @@
     {{::filter.label}}:
   </span>
   <span class="facetly-value" ng-switch="filter.type">
-    <facetly-select ng-switch-when="select" options="filter.options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" list-max-items="listMaxItems" value="filter.value" />
-    <facetly-hierarchy ng-switch-when="hierarchy" options="filter.options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" list-max-items="listMaxItems" value="filter.value" />
+    <facetly-select ng-switch-when="select" options="filter._options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" list-max-items="listMaxItems" value="filter.value" />
+    <facetly-hierarchy ng-switch-when="hierarchy" options="filter._options" allow-multiselect="filter.multiselect" on-select-change="updateFilterValue(value)" list-max-items="listMaxItems" value="filter.value" />
     <input ng-switch-default type="text" class="facetly-form-control" ng-model="filter.value" />
   </span>
 </li>

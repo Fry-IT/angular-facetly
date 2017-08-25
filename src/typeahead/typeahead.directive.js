@@ -13,21 +13,37 @@
         facets: '=',
         placeholder: '@?',
         allowMultiselect: '=?',
+        doNotForceOptions: '@?',
+        resetOnSelect: '@?',
         hideNotFound: '=?',
         listMaxItems: '=?',
         onSelect: '&'
       },
       link: function (scope, element) {
+        var listMaxItems = scope.listMaxItems || 50;
+
         // move this to a constants file
         var HOT_KEYS = [13, 38, 40, 32, 27, 9]; // arrows up(38) / down(40), enter(13), space(32), tab(9)
 
         var handleSuggestionSelect = function (value) {
-          scope.onSelect({ value: value });
+          // Allow setting the value of a query
+          if (_.isUndefined(value) && scope.doNotForceOptions) {
+            scope.onSelect({ value: {title: scope.query }});
+          } else {
+            scope.onSelect({ value: value });
+          }
+
           if (!scope.allowMultiselect) {
             scope.showSuggestions = false;
           }
 
-          scope.query = _.isArray(value) ? '' : value.title;
+          if (scope.resetOnSelect) {
+            scope.query = '';
+          } else {
+            if (!_.isUndefined(value)) {
+              scope.query = _.isArray(value) ? '' : value.title;
+            }
+          }
         };
 
         var addSuggestionToSelect = function (suggestion) {
@@ -46,7 +62,12 @@
                     if (value.length === 0) {
                       return true;
                     } else {
-                      return facet.title.toLowerCase().indexOf(value.toLowerCase()) !== -1;
+                      try {
+                        return facet.title.toLowerCase().indexOf(value.toLowerCase()) !== -1;
+                      } catch (err) {
+                        console.log(err);
+                        return false;
+                      }
                     }
                   })
                   .value();
@@ -102,6 +123,11 @@
         // Watch for keydown events
         element.on('keydown', function (evt) {
           if (scope.suggestions.length === 0 || HOT_KEYS.indexOf(evt.which) === -1) {
+            if (scope.query && scope.query.length > 0 && evt.which === 13) {
+              handleSuggestionSelect();
+              scope.$apply();
+            }
+
             return;
           }
 
@@ -125,7 +151,7 @@
               break;
             case 32: // space bar
               if (scope.allowMultiselect) {
-                addSuggestionToSelect(scope.suggestions[scope.selectedIndex]);
+                scope.addSuggested(scope.suggestions[scope.selectedIndex]);
               }
 
               break;
@@ -135,7 +161,7 @@
               break;
 
             case 9: //tab
-              if (scope.allowMultiselect) {
+              if (scope.allowMultiselect && scope.selected) {
                 handleSuggestionSelect(scope.selected);
                 updateSelected(scope.selected);
                 scope.showSuggestions = false;
@@ -165,26 +191,29 @@
           if (value !== oldValue || value === '') {
             // try to optimize how many letters to initiate the search after
             if (
-              (scope.suggestions.length > 1000 && value.length > 5) ||
-              (scope.suggestions.length > 500 && value.length > 3) ||
-              (scope.suggestions.length > 100 && value.length > 2) ||
-              (scope.suggestions.length <= 100 && value.length > -1)
+              (scope.facets.length > 1000 && value.length >= 5) ||
+              (scope.facets.length > 500 && scope.facets.length < 1000 && value.length >= 3) ||
+              (scope.facets.length > 100 && scope.facets.length < 500 && value.length >= 2) ||
+              (scope.facets.length <= 100 && value.length > -1)
             ) {
               scope.selectedIndex = -1;
               scope.suggestions = suggest(value, scope.facets);
               updateSelected(value);
+            } else {
+              scope.suggestions = [];
             }
           }
         });
 
         // Watch the facets
         scope.$watch('facets', function (value) {
-          scope.suggestions = value.slice();
+          if (value.length <= listMaxItems) {
+            scope.suggestions = value.slice();
+          }
         });
 
         scope.$watch('value', function (value) {
           if (!_.isUndefined(value)) {
-            scope.suggestions = scope.facets.slice();
             if (_.isArray(value)) {
               scope.selected = [];
               _.forEach(value, function (v) {
@@ -195,16 +224,21 @@
             } else {
               handleSuggestionSelect(scope.value);
             }
+          } else {
+            scope.selected = [];
           }
         }, true);
 
         // Hide the typeahead when clicking outside of the input
-        $document.on('click', function (evt) {
-          if (evt.which !== 3 && element.find('input')[0] !== evt.target) {
-            scope.$apply(function () {
+        // this has to be delayed so that it doesn't react to clicks
+        // before the typeahead is set up
+        $timeout(function() {
+          $document.on('click', function (evt) {
+            if (evt.which !== 3 && element.find('input')[0] !== evt.target) {
               scope.showSuggestions = false;
-            });
-          }
+              scope.$apply();
+            }
+          });
         });
 
         // Cleanup

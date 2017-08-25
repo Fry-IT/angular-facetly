@@ -16,17 +16,17 @@
         query="query"
         facets="typeaheadSuggestions"
         hide-not-found="options.defaultFacet && !filters.length"
+        reset-on-select="true"
+        do-not-force-options="true"
         on-select="addTypeaheadSuggestion(value)"
         placeholder="{{options.placeholder}}" />
     </div>
 
     <div class="facetly-buttons">
       <a href="" class="facetly-button facetly-button-success" ng-click="search()">Search</a>
-      <a class="facetly-button facetly-button-danger" href="" ng-if="filters.length" ng-click="removeAllFilters()">Remove all</a>
+      <a class="facetly-button facetly-button-danger" href="" ng-if="showRemoveAll" ng-click="removeAllFilters()">Remove all</a>
     </div>
   </div>
-
-  <p class="facetly-hint-text facetly-text-gray">Hint: You can use advanced search keywords to more easily find what you’re looking for. <a href="" ng-click="showFacets=!showFacets">What keywords can I use?</a></p>
 
   <p class="facetly-hint-text facetly-text-danger" ng-show="errors.length">
     Please correct the following errors before continuing:
