@@ -1,3 +1,20 @@
+###v0.2.2
+___
+
+* Added remove all ([Matous](http://github.com/Matous))
+* Fixed facetly modifying the facets and updating affects only used fields ([Matous](http://github.com/Matous))
+* Remove all can be passed as a function so it is shared with outside facetly ([Matous](http://github.com/Matous))
+* Fixed loading when option is a function and other various small fixes ([Matous](http://github.com/Matous))
+* Do not focus the box all the time ([Matous](http://github.com/Matous))
+* Improved performance for facets with large options ([Matous](http://github.com/Matous))
+* Added experimental search on select ([Matous](http://github.com/Matous))
+* Added reset-on-select option to typeahead ([Matous](http://github.com/Matous))
+* Improve handling of default filter ([Matous](http://github.com/Matous))
+* Always search after removing. Change to use the search function so go with DRY ([Matous](http://github.com/Matous))
+* Update applied filters upon filter set so that it picks up preselected filters ([Matous](http://github.com/Matous))
+* Improve handling of filter set up ([Matous](http://github.com/Matous))
+* Fix filter setting when facet is still loading ([Matous](http://github.com/Matous))
+
 ###v0.2.1
 ___
 
