@@ -1,3 +1,8 @@
+###v0.2.3
+___
+
+* Change wording for filter removal button to Clear ([tricinel](http://github.com/tricinel))
+
 ###v0.2.2
 ___
 
