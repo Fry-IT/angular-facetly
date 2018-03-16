@@ -1,3 +1,9 @@
+###v0.2.4
+___
+
+* Empty the query when the user presses search ([tricinel](http://github.com/tricinel))
+* Add check for proper function definition for doRemoveAll ([tricinel](http://github.com/tricinel))
+
 ###v0.2.3
 ___
 
