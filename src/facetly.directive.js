@@ -112,6 +112,9 @@
               scope.doSearch();
             });
             scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
+
+            // Reset the query for the typeahead
+            scope.query = '';
           }
         };
 
