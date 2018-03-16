@@ -63,7 +63,9 @@
         scope.removeAllFilters = function () {
           scope.filters = Utils.removeAllFilters();
           $timeout(function () {
-            scope.doRemoveAll();
+            if (typeof scope.doRemoveAll === 'function') {
+              scope.doRemoveAll();
+            }
             scope.search();
           });
         };
