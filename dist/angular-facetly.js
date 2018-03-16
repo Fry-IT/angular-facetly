@@ -83,7 +83,9 @@
         scope.removeAllFilters = function () {
           scope.filters = Utils.removeAllFilters();
           $timeout(function () {
-            scope.doRemoveAll();
+            if (typeof scope.doRemoveAll === 'function') {
+              scope.doRemoveAll();
+            }
             scope.search();
           });
         };
@@ -130,6 +132,9 @@
               scope.doSearch();
             });
             scope.typeaheadSuggestions = updateTypeaheadSuggestions(scope.facets, scope.filters);
+
+            // Reset the query for the typeahead
+            scope.query = '';
           }
         };
 
